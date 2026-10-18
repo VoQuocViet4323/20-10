@@ -16,9 +16,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Dancing+Script:wght@400;600;700&family=Pacifico&family=Quicksand:wght@500;600;700&display=swap">
 
-    <!-- Dữ liệu ảnh offline/file:/// cho Quả Cầu 3D và Bức thư -->
-    <script src="photos_data.js"></script>
-
     <style>
         * {
             box-sizing: border-box;
@@ -1283,7 +1280,7 @@
                     for (let x = 0; x <= ws; x++) {
                         const u = x / ws, theta = t0 + u * (t1 - t0);
                         verts.push(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
-                        uvs.push(1 - u, 1 - v);
+                        uvs.push(u, 1 - v);
                     }
                 }
                 for (let y = 0; y < hs; y++) for (let x = 0; x < ws; x++) {
@@ -1539,10 +1536,7 @@
                             const imgEl = document.getElementById('letterInlineImage');
                             const captionEl = document.getElementById('letterImageCaption');
                             if (cfg.letter?.image && imgEl) {
-                                const pData = window.PHOTOS_DATA || {};
-                                const rawUrl = cfg.letter.image;
-                                const cleanKey = rawUrl.split('/').pop();
-                                imgEl.src = pData[rawUrl] || pData[cleanKey] || rawUrl;
+                                imgEl.src = cfg.letter.image;
                                 if (captionEl) captionEl.textContent = cfg.letter.caption || 'Yêu em ❤️';
                                 wrap.style.display = 'block';
                                 requestAnimationFrame(() => { wrap.classList.add('visible'); });
@@ -1588,36 +1582,22 @@
             let spCameraTransitioning = false;
             const spTargetCameraPos = new THREE.Vector3();
 
-            function applySphereTextures(textures) {
-                if (!textures || textures.length === 0) return;
-                spTextures = textures;
-                spTextures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
-                if (spMeshes && spMeshes.length > 0) {
-                    spMeshes.forEach((mesh, idx) => {
-                        if (mesh.material) {
-                            mesh.material.map = spTextures[idx % spTextures.length];
-                            mesh.material.needsUpdate = true;
-                        }
-                    });
-                }
-            }
-
             function startSpherePhase() {
                 // Chuyển cảnh mượt mà tức thì: KHÔNG màn đen, KHÔNG gián đoạn
                 camera.fov = 75;
                 camera.updateProjectionMatrix();
                 if (isMobileSP) {
-                    spTargetCameraPos.set(0, 0, 22);
+                    spTargetCameraPos.set(0, 0, 16);
                 } else {
-                    spTargetCameraPos.set(0, 0, 18);
+                    spTargetCameraPos.set(0, 0, 11);
                 }
                 spCameraTransitioning = true;
                 controls.target.set(0, 0, 0);
                 controls.enableRotate = true;
                 controls.enableZoom = true;
                 controls.enablePan = false;
-                controls.minDistance = isMobileSP ? 8 : 6.5;
-                controls.maxDistance = isMobileSP ? 38 : 32;
+                controls.minDistance = isMobileSP ? 5.5 : 6;
+                controls.maxDistance = isMobileSP ? 26 : 20;
                 controls.minPolarAngle = Math.PI * 0.2;
                 controls.maxPolarAngle = Math.PI * 0.8;
                 controls.update();
@@ -1706,26 +1686,6 @@
 
                 // Dựng quả cầu 3D với textures đã tải sẵn
                 function doBuildSphere() {
-                    if (!spTextures || !spTextures.length) {
-                        const pData = window.PHOTOS_DATA || {};
-                        const pKeys = (cfg.sphereImages && cfg.sphereImages.length) ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg'];
-                        const texLoader = new THREE.TextureLoader();
-                        const b64List = pKeys.map(k => {
-                            const clean = k.split('/').pop();
-                            const src = pData[k] || pData[clean];
-                            if (src) {
-                                const t = texLoader.load(src);
-                                t.colorSpace = THREE.SRGBColorSpace;
-                                return t;
-                            }
-                            return null;
-                        }).filter(t => t !== null);
-
-                        if (b64List.length > 0) {
-                            spTextures = b64List;
-                        }
-                    }
-
                     if (!spTextures || !spTextures.length) {
                         const c = document.createElement('canvas'); c.width = c.height = 256;
                         const ctx = c.getContext('2d');
@@ -1955,30 +1915,14 @@
 
                 // Tải trước textures cho Quả Cầu 3D ngay từ đầu để sẵn sàng chuyển cảnh tức thì
                 const loader = new THREE.TextureLoader();
-                const pData = window.PHOTOS_DATA || {};
                 const sphereImgs = (cfg.sphereImages && cfg.sphereImages.length) ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg'];
-                
-                const resolveImgUrl = (url) => {
-                    const clean = url.split('/').pop();
-                    return pData[url] || pData[clean] || url;
-                };
-
                 const loadSingleTex = (url) => new Promise(resolve => {
-                    const finalUrl = resolveImgUrl(url);
-                    loader.load(
-                        finalUrl,
-                        tex => {
-                            tex.colorSpace = THREE.SRGBColorSpace;
-                            resolve(tex);
-                        },
-                        undefined,
-                        () => resolve(null)
-                    );
+                    loader.load(url, tex => resolve(tex), undefined, () => resolve(null));
                 });
                 Promise.all(sphereImgs.map(loadSingleTex)).then(textures => {
                     const valid = textures.filter(t => t !== null);
                     if (valid.length > 0) {
-                        applySphereTextures(valid);
+                        spTextures = valid;
                     }
                 });
 
