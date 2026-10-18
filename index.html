@@ -1077,16 +1077,30 @@
 
       // Danh sách ảnh tạo nên Quả Cầu Vũ Trụ 3D (tự động dùng Base64 khi mở file trực tiếp để không bị lỗi CORS)
       sphereImages: (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length) ? window.SPHERE_PHOTO_DATA : [
-        'photos/1.jpg',
         'photos/2.jpg',
+        'photos/10.jpg',
+        'photos/1.jpg',
+        'photos/13.jpg',
+        'photos/6.jpg',
+        'photos/5.jpg',
+        'photos/14.jpg',
+        'photos/7.jpg',
         'photos/3.jpg',
+        'photos/16.jpg',
+        'photos/12.jpg',
+        'photos/15.jpg',
+        'photos/4.jpg',
+        'photos/17.jpg',
+        'photos/11.jpg',
+        'photos/8.jpg',
+        'photos/9.jpg',
         'photos/bouquet.jpg'
       ],
 
       // Nội dung bức thư tình
       letter: {
         text: "Gửi em, cô Bác sĩ nhỏ của anh 💌\n\nChúc mừng ngày Phụ Nữ Việt Nam 20/10\n\nChúc em 20/10 luôn xinh đẹp, luôn rạng rỡ, luôn là phiên bản hạnh phúc nhất của chính mình\n\nChúc em không chỉ đẹp trong mắt anh, mà còn luôn đẹp trong mọi khoảnh khắc của cuộc sống\n\nCảm ơn em vì đã đến bên và yêu anh, sẻ chia mọi chuyện với nhau để mỗi ngày được hiểu nhau hơn. Mỗi khoảnh khắc được gần em anh đều trân trọng.\n\nChúc cô gái của anh luôn xinh đẹp, rạng rỡ, bình an và mãi luôn là niềm hạnh phúc nhất của anh.\nAnh iu em, Minh Khuê! ❤️",
-        image: (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA[1]) || 'photos/2.jpg',
+        image: window.LETTER_PHOTO_DATA || (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA[0]) || 'photos/2.jpg',
         // caption: 'Khoảnh khắc ngọt ngào của chúng mình 💕'
       },
 
@@ -1502,7 +1516,7 @@
       const spPhotoLoader = new THREE.TextureLoader();
       const spImageSources = (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length)
         ? window.SPHERE_PHOTO_DATA
-        : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg']);
+        : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : []);
 
       spTextures = spImageSources.map(url => {
         const tex = spPhotoLoader.load(url, t => {
@@ -1949,7 +1963,7 @@
           if (!hasRealTextures) {
             const sources = (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length)
               ? window.SPHERE_PHOTO_DATA
-              : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg']);
+              : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : []);
             if (sources.length > 0) {
               const ldr = new THREE.TextureLoader();
               spTextures = sources.map(u => {
@@ -2185,7 +2199,7 @@
         const loader = new THREE.TextureLoader();
         const sphereImgs = (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length)
           ? window.SPHERE_PHOTO_DATA
-          : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg']);
+          : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : []);
         const loadSingleTex = (url) => new Promise(resolve => {
           loader.load(url, tex => {
             if (tex) {
