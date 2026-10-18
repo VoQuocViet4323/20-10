@@ -1553,13 +1553,13 @@
           ig.userData = {
             startPos: ig.position.clone(),
             targetPos: new THREE.Vector3(tp.x, tp.y, tp.z),
-            floatSpeedY: 0.18 + Math.random() * 0.2,
-            floatAmplY: 0.09 + Math.random() * 0.12,
+            floatSpeedY: 0.28 + Math.random() * 0.25,
+            floatAmplY: 0.1 + Math.random() * 0.14,
             floatPhase: Math.random() * Math.PI * 2,
             delay: Math.random() * 0.35,
             basePos: new THREE.Vector3(tp.x, tp.y, tp.z),
             iMat, gMat,
-            driftSpeed: 0.0005 + Math.random() * 0.0006,
+            driftSpeed: 0.001 + Math.random() * 0.0012,
             baseZ: tp.z
           };
           spFloatingGroup.add(ig);
@@ -1953,8 +1953,8 @@
         }
 
         if (spIsExploded) {
-          spExplosionProgress = Math.min(1, spExplosionProgress + 0.012);
-          spFadeProgress = Math.min(1, spFadeProgress + 0.03);
+          spExplosionProgress = Math.min(1, spExplosionProgress + 0.016);
+          spFadeProgress = Math.min(1, spFadeProgress + 0.035);
           spGroup.children.forEach(child => {
             if (child.material) {
               child.material.opacity = Math.max(0, 1 - spFadeProgress);
@@ -1964,9 +1964,9 @@
           spClickSphere.visible = false;
 
           if (spFloatingGroup) {
-            spDriftTiltAngle += spDriftTiltDir * 0.00018;
-            if (spDriftTiltAngle >= 0.18) { spDriftTiltAngle = 0.18; spDriftTiltDir = -1; }
-            else if (spDriftTiltAngle <= -0.18) { spDriftTiltAngle = -0.18; spDriftTiltDir = 1; }
+            spDriftTiltAngle += spDriftTiltDir * 0.00025;
+            if (spDriftTiltAngle >= 0.2) { spDriftTiltAngle = 0.2; spDriftTiltDir = -1; }
+            else if (spDriftTiltAngle <= -0.2) { spDriftTiltAngle = -0.2; spDriftTiltDir = 1; }
             spFloatingGroup.rotation.y = spDriftTiltAngle;
           }
 
@@ -1977,8 +1977,8 @@
             if (dp > 0) {
               const t = Math.min(1, dp), eased = 1 - Math.pow(1 - t, 2);
               const fY = Math.sin(spTime * d.floatSpeedY + d.floatPhase) * d.floatAmplY;
-              // Tốc độ bay lên nhanh gấp 2 lần, uyển chuyển và rõ nét
-              d.basePos.y += d.driftSpeed * 3.0;
+              // Tốc độ bay lên nhanh, liên tục và cuốn hút
+              d.basePos.y += d.driftSpeed * 6.0;
 
               if (eased < 1) {
                 img.position.x = d.startPos.x + (d.targetPos.x - d.startPos.x) * eased;
