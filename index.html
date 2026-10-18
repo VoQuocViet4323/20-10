@@ -721,7 +721,7 @@
       max-height: 84dvh;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: clamp(24px, 5vw, 36px) clamp(20px, 4vw, 36px) clamp(30px, 6vw, 45px);
+      padding: clamp(24px, 5vw, 36px) clamp(20px, 4vw, 36px) clamp(36px, 7vw, 52px);
       scrollbar-width: thin;
       scrollbar-color: rgba(216, 74, 111, 0.35) transparent;
       -webkit-overflow-scrolling: touch;
@@ -777,7 +777,8 @@
 
     .letter-image-wrap {
       margin-top: 1.8rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: clamp(20px, 4vw, 32px);
       text-align: center;
       position: relative;
       opacity: 0;
@@ -798,13 +799,20 @@
 
     .letter-inline-image {
       display: block;
-      max-width: min(85vw, 360px);
+      max-width: min(85vw, 340px);
       width: auto;
-      max-height: 48vh;
+      max-height: 42vh;
       margin: 0 auto;
       border-radius: 14px;
       box-shadow: 0 10px 28px rgba(123, 40, 80, 0.22), 0 0 0 5px #ffffff;
       object-fit: cover;
+    }
+
+    .letter-bottom-spacer {
+      display: block;
+      height: clamp(32px, 7vw, 54px);
+      width: 100%;
+      pointer-events: none;
     }
 
     .letter-image-caption {
@@ -1038,6 +1046,7 @@
         <div class="letter-image-wrap" id="letterImageWrap" style="display:none">
           <img class="letter-inline-image" id="letterInlineImage" src="" alt="Kỷ niệm">
         </div>
+        <div class="letter-bottom-spacer"></div>
       </div>
     </div>
   </div>
@@ -1772,13 +1781,19 @@
               if (cursor) cursor.style.display = 'none';
               const wrap = document.getElementById('letterImageWrap');
               const imgEl = document.getElementById('letterInlineImage');
+              const scrollWrapper = document.getElementById('letterScrollWrapper');
               if (cfg.letter?.image && imgEl) {
                 imgEl.src = cfg.letter.image;
                 wrap.style.display = 'block';
                 requestAnimationFrame(() => {
                   wrap.classList.add('visible');
                   setTimeout(() => {
-                    wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    if (scrollWrapper) {
+                      scrollWrapper.scrollTo({
+                        top: scrollWrapper.scrollHeight,
+                        behavior: 'smooth'
+                      });
+                    }
                   }, 150);
                 });
               }
