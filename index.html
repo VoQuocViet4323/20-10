@@ -998,19 +998,21 @@
 
             // ── TẠO HẠT TỪ ẢNH (CANVAS SAMPLING) ──
             function generateFromImage(img, count, size) {
-                let w = img.naturalWidth || img.width || 600;
-                let h = img.naturalHeight || img.height || 600;
-                const maxDim = 1800;
+                if (!img || !img.naturalWidth || img.naturalWidth <= 0) return null;
+                let w = img.naturalWidth;
+                let h = img.naturalHeight;
+                const maxDim = 800; // Giới hạn kích thước để lấy mẫu cực nhanh và mượt mà
                 if (w > maxDim || h > maxDim) {
                     const s = maxDim / Math.max(w, h);
                     w = Math.round(w * s);
                     h = Math.round(h * s);
                 }
+                if (w <= 0 || h <= 0) return null;
                 const canvas = document.createElement('canvas');
                 canvas.width = w;
                 canvas.height = h;
                 const ctx = canvas.getContext('2d');
-                ctx.imageSmoothingEnabled = false;
+                ctx.imageSmoothingEnabled = true;
                 try {
                     ctx.drawImage(img, 0, 0, w, h);
                     const imgData = ctx.getImageData(0, 0, w, h).data;
@@ -1331,36 +1333,42 @@
             function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
             function createMorphImageOverlay(img) {
-                const w = img.naturalWidth || img.width || 600;
-                const h = img.naturalHeight || img.height || 600;
-                const size = PARAMS.textShapeSize;
-                const aspect = w / h;
-                const planeW = aspect >= 1 ? size : size * aspect;
-                const planeH = aspect >= 1 ? size / aspect : size;
+                if (!img || !img.naturalWidth || img.naturalWidth <= 0) return null;
+                try {
+                    const w = Math.min(img.naturalWidth || 600, 1200);
+                    const h = Math.min(img.naturalHeight || 600, 1200);
+                    const size = PARAMS.textShapeSize;
+                    const aspect = (h > 0) ? (w / h) : 1;
+                    const planeW = aspect >= 1 ? size : size * aspect;
+                    const planeH = aspect >= 1 ? size / aspect : size;
 
-                const offscreen = document.createElement('canvas');
-                offscreen.width  = w;
-                offscreen.height = h;
-                const octx = offscreen.getContext('2d');
-                octx.drawImage(img, 0, 0, w, h);
+                    const offscreen = document.createElement('canvas');
+                    offscreen.width  = w;
+                    offscreen.height = h;
+                    const octx = offscreen.getContext('2d');
+                    octx.drawImage(img, 0, 0, w, h);
 
-                const geometry = new THREE.PlaneGeometry(planeW, planeH);
-                const texture  = new THREE.CanvasTexture(offscreen);
-                texture.colorSpace = THREE.SRGBColorSpace;
-                const material = new THREE.MeshBasicMaterial({
-                    map: texture,
-                    transparent: true,
-                    opacity: 0,
-                    depthTest: false,
-                    depthWrite: false
-                });
-                const mesh = new THREE.Mesh(geometry, material);
-                mesh.position.set(0, 0, 0);
-                mesh.lookAt(camera.position);
-                mesh.renderOrder = 10;
-                mesh.layers.set(1);
-                scene.add(mesh);
-                return mesh;
+                    const geometry = new THREE.PlaneGeometry(planeW, planeH);
+                    const texture  = new THREE.CanvasTexture(offscreen);
+                    texture.colorSpace = THREE.SRGBColorSpace;
+                    const material = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        transparent: true,
+                        opacity: 0,
+                        depthTest: false,
+                        depthWrite: false
+                    });
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set(0, 0, 0);
+                    mesh.lookAt(camera.position);
+                    mesh.renderOrder = 10;
+                    mesh.layers.set(1);
+                    scene.add(mesh);
+                    return mesh;
+                } catch (e) {
+                    console.warn('Không thể tạo morphImageOverlay:', e);
+                    return null;
+                }
             }
 
             function removeMorphImageOverlay() {
@@ -1783,12 +1791,28 @@
                 // Tải Texture cho Sphere từ ảnh người dùng
                 const loader = new THREE.TextureLoader();
                 const sphereImgs = (cfg.sphereImages && cfg.sphereImages.length) ? cfg.sphereImages : ['photos/1.jpg'];
-                Promise.all(sphereImgs.map(url => new Promise(res => loader.load(url, res, undefined, () => res(null)))))
+                const loadSingleTex = (url) => new Promise(resolve => {
+                    let done = false;
+                    const to = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 2000);
+                    loader.load(
+                        url,
+                        tex => { if (!done) { done = true; clearTimeout(to); resolve(tex); } },
+                        undefined,
+                        () => { if (!done) { done = true; clearTimeout(to); resolve(null); } }
+                    );
+                });
+
+                Promise.all(sphereImgs.map(loadSingleTex))
                     .then(textures => {
                         spTextures = textures.filter(t => t !== null);
                         if (!spTextures.length) {
-                            const c = document.createElement('canvas'); c.width = c.height = 128;
-                            const ctx = c.getContext('2d'); ctx.fillStyle = '#ff758c'; ctx.fillRect(0, 0, 128, 128);
+                            const c = document.createElement('canvas'); c.width = c.height = 256;
+                            const ctx = c.getContext('2d');
+                            const grad = ctx.createLinearGradient(0, 0, 256, 256);
+                            grad.addColorStop(0, '#ff758c'); grad.addColorStop(1, '#ff7eb3');
+                            ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 256);
+                            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 36px "Pacifico", cursive';
+                            ctx.textAlign = 'center'; ctx.fillText('20/10 💕', 128, 140);
                             spTextures = [new THREE.CanvasTexture(c)];
                         }
                         spTextures.forEach(t => { t.colorSpace = THREE.LinearSRGBColorSpace; });
@@ -1972,51 +1996,90 @@
             // ── CHU TRÌNH TỰ ĐỘNG CHẠY VŨ TRỤ (AUTOPLAY) ──
             let _preloadedImg = null;
             async function startAutoPlay() {
-                startBgMusic();
-                const morphTexts = (cfg.morphTexts && cfg.morphTexts.length) ? cfg.morphTexts : ['Chúc Mừng', '20/10', 'Em Yêu 💕'];
-                for (const text of morphTexts) {
-                    showText(text);
-                    await sleep(3200);
-                }
+                try {
+                    startBgMusic();
+                } catch (e) {}
 
-                if (_preloadedImg) {
-                    const imgLow = generateFromImage(_preloadedImg, PARAMS.autoPlayTextCount, PARAMS.textShapeSize);
-                    if (imgLow) {
-                        bloomPass.strength = 0.22;
-                        bloomPass.threshold = 0.35;
-                        if (particleSystem && particleCount === imgLow.positions.length / 3) {
-                            startMorphToResult(imgLow);
-                        } else {
-                            rebuildParticleSystemForImage(imgLow);
-                        }
+                try {
+                    const morphTexts = (cfg.morphTexts && cfg.morphTexts.length) ? cfg.morphTexts : ['Chúc Mừng', '20/10', 'Minh Khuê 💕'];
+                    for (const text of morphTexts) {
+                        showText(text);
+                        await sleep(2800);
                     }
-                    await sleep(2500);
 
-                    isMorphing = false;
-                    morphImageOverlay = createMorphImageOverlay(_preloadedImg);
-                    morphOverlayFadeStartTime = clock.getElapsedTime();
-                    await sleep(4200);
-                } else {
-                    await sleep(1000);
+                    // Morph sang ảnh kỷ niệm nếu có ảnh hợp lệ
+                    if (_preloadedImg && _preloadedImg.complete && _preloadedImg.naturalWidth > 0) {
+                        try {
+                            const imgLow = generateFromImage(_preloadedImg, PARAMS.autoPlayTextCount, PARAMS.textShapeSize);
+                            if (imgLow) {
+                                bloomPass.strength = 0.22;
+                                bloomPass.threshold = 0.35;
+                                if (particleSystem && particleCount === imgLow.positions.length / 3) {
+                                    startMorphToResult(imgLow);
+                                } else {
+                                    rebuildParticleSystemForImage(imgLow);
+                                }
+                                await sleep(2200);
+                            }
+
+                            isMorphing = false;
+                            morphImageOverlay = createMorphImageOverlay(_preloadedImg);
+                            if (morphImageOverlay) {
+                                morphOverlayFadeStartTime = clock.getElapsedTime();
+                                await sleep(3500);
+                            }
+                        } catch (imgErr) {
+                            console.warn('Lỗi khi morph ảnh, tiếp tục chuyển cảnh:', imgErr);
+                        }
+                    } else {
+                        await sleep(1200);
+                    }
+                } catch (err) {
+                    console.error('Lỗi trong chuỗi text:', err);
                 }
 
-                triggerExplosion();
-                startSpherePhase();
+                // Chắc chắn 100% kích hoạt vụ nổ và chuyển sang Quả cầu ảnh 3D
+                try {
+                    triggerExplosion();
+                } catch (e) {
+                    console.error('Lỗi triggerExplosion:', e);
+                }
+
+                try {
+                    await startSpherePhase();
+                } catch (e) {
+                    console.error('Lỗi startSpherePhase:', e);
+                }
             }
 
             // ── CHUẨN BỊ VÀ HIỆN NÚT GIỮ ──
             async function prepareAndWait() {
                 try {
-                    await document.fonts.load('135px "Pacifico"');
+                    await Promise.race([
+                        document.fonts.load('135px "Pacifico"'),
+                        sleep(1200)
+                    ]);
                 } catch (e) {}
 
-                const imgSrc = cfg.particleImage || 'photos/1.jpg';
+                const imgSrc = cfg.particleImage || 'assets/pngegg.png';
                 if (imgSrc) {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.src = imgSrc;
-                    await new Promise(r => { img.onload = r; img.onerror = r; });
-                    _preloadedImg = img;
+                    try {
+                        const img = new Image();
+                        if (imgSrc.startsWith('http://') || imgSrc.startsWith('https://')) {
+                            img.crossOrigin = 'anonymous';
+                        }
+                        await new Promise((resolve) => {
+                            img.onload = () => resolve(img);
+                            img.onerror = () => resolve(null);
+                            setTimeout(() => resolve(null), 2500);
+                            img.src = imgSrc;
+                        });
+                        if (img.complete && img.naturalWidth > 0) {
+                            _preloadedImg = img;
+                        }
+                    } catch (e) {
+                        _preloadedImg = null;
+                    }
                 }
 
                 initScatterParticles();
