@@ -713,17 +713,40 @@
       }
     }
 
-    .letter-content {
+    .letter-scroll-wrapper {
       position: relative;
       z-index: 2;
-      padding: clamp(24px, 5vw, 36px) clamp(22px, 5vw, 40px) clamp(40px, 8vw, 60px);
+      width: 100%;
+      max-height: 84vh;
+      max-height: 84dvh;
       overflow-y: auto;
-      max-height: 75vh;
+      overflow-x: hidden;
+      padding: clamp(24px, 5vw, 36px) clamp(20px, 4vw, 36px) clamp(30px, 6vw, 45px);
       scrollbar-width: thin;
+      scrollbar-color: rgba(216, 74, 111, 0.35) transparent;
+      -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
+    }
+
+    .letter-scroll-wrapper::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .letter-scroll-wrapper::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .letter-scroll-wrapper::-webkit-scrollbar-thumb {
+      background: rgba(216, 74, 111, 0.35);
+      border-radius: 10px;
+    }
+
+    .letter-content {
+      position: relative;
       font-family: "Pacifico", "Dancing Script", -apple-system, serif;
       font-size: clamp(1rem, 2.2vw, 1.25rem);
       color: #7b2850;
-      line-height: 1.8;
+      line-height: 1.85;
       letter-spacing: 0.02em;
       text-align: center;
       white-space: pre-wrap;
@@ -741,7 +764,6 @@
     }
 
     @keyframes blinkCursor {
-
       0%,
       50% {
         opacity: 1;
@@ -754,12 +776,13 @@
     }
 
     .letter-image-wrap {
-      margin-top: 1.4rem;
+      margin-top: 1.8rem;
+      margin-bottom: 1rem;
       text-align: center;
       position: relative;
-      z-index: 2;
       opacity: 0;
       transform: translateY(16px) scale(0.92);
+      clear: both;
     }
 
     .letter-image-wrap.visible {
@@ -775,22 +798,17 @@
 
     .letter-inline-image {
       display: block;
-      max-width: min(85vw, 340px);
+      max-width: min(85vw, 360px);
       width: auto;
-      max-height: 36vh;
+      max-height: 48vh;
       margin: 0 auto;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(123, 40, 80, 0.25), 0 0 0 5px #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(123, 40, 80, 0.22), 0 0 0 5px #ffffff;
       object-fit: cover;
     }
 
     .letter-image-caption {
-      display: block;
-      margin-top: 0.8em;
-      font-size: 1.1em;
-      color: #c93b66;
-      font-weight: 600;
-      letter-spacing: 0.1em;
+      display: none !important;
     }
 
     .letter-close-btn {
@@ -1015,10 +1033,11 @@
       <div class="letter-butterfly-left"><img src="assets/buomtrai.png" alt="" /></div>
       <div class="letter-butterfly-right"><img src="assets/buomphai.png" alt="" /></div>
       <div class="letter-bottom-bg"></div>
-      <div class="letter-content" id="letterContent"></div>
-      <div class="letter-image-wrap" id="letterImageWrap" style="display:none">
-        <img class="letter-inline-image" id="letterInlineImage" src="" alt="Kỷ niệm">
-        <span class="letter-image-caption" id="letterImageCaption">Mãi yêu em ❤️</span>
+      <div class="letter-scroll-wrapper" id="letterScrollWrapper">
+        <div class="letter-content" id="letterContent"></div>
+        <div class="letter-image-wrap" id="letterImageWrap" style="display:none">
+          <img class="letter-inline-image" id="letterInlineImage" src="" alt="Kỷ niệm">
+        </div>
       </div>
     </div>
   </div>
@@ -1057,9 +1076,9 @@
 
       // Nội dung bức thư tình
       letter: {
-        text: "Gửi em, cô gái ngọt ngào của anh 💌\n\nChúc mừng ngày Phụ Nữ Việt Nam 20/10 thật hạnh phúc nhé em yêu!\n\nCảm ơn em vì đã xuất hiện và mang đến cho thế giới của anh vô vàn nụ cười, sự dịu dàng và những điều ấm áp nhất.\nMỗi khoảnh khắc được cùng em sẻ chia đều là món quà quý giá mà anh luôn trân trọng từng giây từng phút.\n\nChúc cô gái của anh luôn xinh đẹp, rạng rỡ, bình an và mãi luôn là niềm hạnh phúc ngọt ngào nhất của anh.\n\nAnh yêu em rất nhiều, hôm nay và mãi mãi về sau! ❤️",
+        text: "Gửi em, cô Bác sĩ nhỏ của anh 💌\n\nChúc mừng ngày Phụ Nữ Việt Nam 20/10\n\nChúc em 20/10 luôn xinh đẹp, luôn rạng rỡ, luôn là phiên bản hạnh phúc nhất của chính mình\n\nChúc em không chỉ đẹp trong mắt anh, mà còn luôn đẹp trong mọi khoảnh khắc của cuộc sống\n\nCảm ơn em vì đã đến bên và yêu anh, sẻ chia mọi chuyện với nhau để mỗi ngày được hiểu nhau hơn. Mỗi khoảnh khắc được gần em anh đều trân trọng.\n\nChúc cô gái của anh luôn xinh đẹp, rạng rỡ, bình an và mãi luôn là niềm hạnh phúc nhất của anh.\nAnh iu em, Minh Khuê! ❤️",
         image: (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA[1]) || 'photos/2.jpg',
-        caption: 'Khoảnh khắc ngọt ngào của chúng mình 💕'
+        // caption: 'Khoảnh khắc ngọt ngào của chúng mình 💕'
       },
 
       // Nhạc nền (đã tải sẵn offline trong music/bgmusic.mp3)
@@ -1422,6 +1441,71 @@
 
       function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+      function createDiverseFallbackTextures() {
+        const titles = ['Minh Khuê 💕', '20/10 ✨', 'Yêu Em ❤️', 'Xinh Đẹp 🌸'];
+        const colors = [
+          ['#ff758c', '#ff7eb3'],
+          ['#f857a6', '#ff5858'],
+          ['#ff9a9e', '#fecfef'],
+          ['#a18cd1', '#fbc2eb']
+        ];
+        return titles.map((title, i) => {
+          const c = document.createElement('canvas'); c.width = c.height = 300;
+          const ctx = c.getContext('2d');
+          const grad = ctx.createLinearGradient(0, 0, 300, 300);
+          grad.addColorStop(0, colors[i % colors.length][0]);
+          grad.addColorStop(1, colors[i % colors.length][1]);
+          ctx.fillStyle = grad; ctx.fillRect(0, 0, 300, 300);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 36px "Pacifico", cursive';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(title, 150, 150);
+          const tex = new THREE.CanvasTexture(c);
+          tex.colorSpace = THREE.SRGBColorSpace;
+          tex.isFallback = true;
+          return tex;
+        });
+      }
+
+      function applyTexturesToExistingMeshes(textures) {
+        if (!textures || !textures.length) return;
+        textures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
+        spTextures = textures;
+        if (spMeshes && spMeshes.length > 0) {
+          spMeshes.forEach((mesh, idx) => {
+            if (mesh.material) {
+              mesh.material.map = textures[idx % textures.length];
+              mesh.material.needsUpdate = true;
+            }
+          });
+        }
+        if (spFloatingImages && spFloatingImages.length > 0) {
+          spFloatingImages.forEach((ig, idx) => {
+            if (ig.userData && ig.userData.iMat) {
+              ig.userData.iMat.map = textures[idx % textures.length];
+              ig.userData.iMat.needsUpdate = true;
+            }
+          });
+        }
+      }
+
+      // Tải trước textures thật từ Base64 offline hoặc đường dẫn ảnh ngay khi script khởi động
+      const spPhotoLoader = new THREE.TextureLoader();
+      const spImageSources = (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length)
+        ? window.SPHERE_PHOTO_DATA
+        : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg']);
+
+      spTextures = spImageSources.map(url => {
+        const tex = spPhotoLoader.load(url, t => {
+          if (t) {
+            t.colorSpace = THREE.SRGBColorSpace;
+            t.needsUpdate = true;
+          }
+        });
+        tex.colorSpace = THREE.SRGBColorSpace;
+        return tex;
+      });
+
       function spCreatePatch(r, t0, t1, p0, p1, ws, hs) {
         const geo = new THREE.BufferGeometry();
         const verts = [], uvs = [], idx = [];
@@ -1430,7 +1514,7 @@
           for (let x = 0; x <= ws; x++) {
             const u = x / ws, theta = t0 + u * (t1 - t0);
             verts.push(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
-            uvs.push(u, 1 - v);
+            uvs.push(1 - u, 1 - v);
           }
         }
         for (let y = 0; y < hs; y++) for (let x = 0; x < ws; x++) {
@@ -1688,12 +1772,15 @@
               if (cursor) cursor.style.display = 'none';
               const wrap = document.getElementById('letterImageWrap');
               const imgEl = document.getElementById('letterInlineImage');
-              const captionEl = document.getElementById('letterImageCaption');
               if (cfg.letter?.image && imgEl) {
                 imgEl.src = cfg.letter.image;
-                if (captionEl) captionEl.textContent = cfg.letter.caption || 'Yêu em ❤️';
                 wrap.style.display = 'block';
-                requestAnimationFrame(() => { wrap.classList.add('visible'); });
+                requestAnimationFrame(() => {
+                  wrap.classList.add('visible');
+                  setTimeout(() => {
+                    wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                  }, 150);
+                });
               }
             }, 300);
           }
@@ -1710,6 +1797,9 @@
         const letterFrame = document.getElementById('cupid-letter-frame');
         const letterContent = document.getElementById('letterContent');
         const letterImageWrap = document.getElementById('letterImageWrap');
+        const scrollWrapper = document.getElementById('letterScrollWrapper');
+
+        if (scrollWrapper) scrollWrapper.scrollTop = 0;
 
         if (letterImageWrap) {
           letterImageWrap.style.display = 'none';
@@ -1838,60 +1928,30 @@
           bg.style.opacity = '1';
         }
 
-        function createDiverseFallbackTextures() {
-          const titles = ['Minh Khuê 💕', '20/10 ✨', 'Yêu Em ❤️', 'Xinh Đẹp 🌸'];
-          const colors = [
-            ['#ff758c', '#ff7eb3'],
-            ['#f857a6', '#ff5858'],
-            ['#ff9a9e', '#fecfef'],
-            ['#a18cd1', '#fbc2eb']
-          ];
-          return titles.map((title, i) => {
-            const c = document.createElement('canvas'); c.width = c.height = 300;
-            const ctx = c.getContext('2d');
-            const grad = ctx.createLinearGradient(0, 0, 300, 300);
-            grad.addColorStop(0, colors[i % colors.length][0]);
-            grad.addColorStop(1, colors[i % colors.length][1]);
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, 300, 300);
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 36px "Pacifico", cursive';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(title, 150, 150);
-            const tex = new THREE.CanvasTexture(c);
-            tex.colorSpace = THREE.SRGBColorSpace;
-            tex.isFallback = true;
-            return tex;
-          });
-        }
-
-        function applyTexturesToExistingMeshes(textures) {
-          if (!textures || !textures.length) return;
-          textures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
-          if (spMeshes && spMeshes.length > 0) {
-            spMeshes.forEach((mesh, idx) => {
-              if (mesh.material) {
-                mesh.material.map = textures[idx % textures.length];
-                mesh.material.needsUpdate = true;
-              }
-            });
-          }
-          if (spFloatingImages && spFloatingImages.length > 0) {
-            spFloatingImages.forEach((ig, idx) => {
-              if (ig.userData && ig.userData.iMat) {
-                ig.userData.iMat.map = textures[idx % textures.length];
-                ig.userData.iMat.needsUpdate = true;
-              }
-            });
-          }
-        }
-
-        // Dựng quả cầu 3D với textures đã tải sẵn
+        // Dựng quả cầu 3D với textures ảnh thật đã nạp sẵn
         function doBuildSphere() {
-          if (!spTextures || !spTextures.length) {
-            spTextures = createDiverseFallbackTextures();
-          } else {
-            spTextures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
+          const hasRealTextures = spTextures && spTextures.length > 0 && !spTextures[0].isFallback;
+          if (!hasRealTextures) {
+            const sources = (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length)
+              ? window.SPHERE_PHOTO_DATA
+              : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg']);
+            if (sources.length > 0) {
+              const ldr = new THREE.TextureLoader();
+              spTextures = sources.map(u => {
+                const t = ldr.load(u, tex => {
+                  if (tex) {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    tex.needsUpdate = true;
+                  }
+                });
+                t.colorSpace = THREE.SRGBColorSpace;
+                return t;
+              });
+            } else {
+              spTextures = createDiverseFallbackTextures();
+            }
           }
+          spTextures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
           spBuildSphere();
           spPhase = true;
 
@@ -2108,10 +2168,15 @@
 
         // Tải trước textures cho Quả Cầu 3D ngay từ đầu để sẵn sàng chuyển cảnh tức thì
         const loader = new THREE.TextureLoader();
-        const sphereImgs = (cfg.sphereImages && cfg.sphereImages.length) ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg'];
+        const sphereImgs = (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length)
+          ? window.SPHERE_PHOTO_DATA
+          : (cfg.sphereImages && cfg.sphereImages.length ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg']);
         const loadSingleTex = (url) => new Promise(resolve => {
           loader.load(url, tex => {
-            if (tex) tex.colorSpace = THREE.SRGBColorSpace;
+            if (tex) {
+              tex.colorSpace = THREE.SRGBColorSpace;
+              tex.needsUpdate = true;
+            }
             resolve(tex);
           }, undefined, () => resolve(null));
         });
@@ -2120,6 +2185,8 @@
           if (valid.length > 0) {
             applyTexturesToExistingMeshes(valid);
           }
+        }).catch(err => {
+          console.warn('Preload textures warning:', err);
         });
 
         initScatterParticles();
@@ -2140,7 +2207,7 @@
             clearInterval(holdTimer);
             holdTimer = null;
           }
-          try { startBgMusic(); } catch (_) {}
+          try { startBgMusic(); } catch (_) { }
           wrap.classList.add('held');
           ringFill.style.transition = 'stroke-dashoffset 0.2s ease-out';
           ringFill.style.strokeDashoffset = '0';
@@ -2153,9 +2220,9 @@
         function onDown(e) {
           if (triggered) return;
           if (e && e.pointerId && wrap.setPointerCapture) {
-            try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
+            try { wrap.setPointerCapture(e.pointerId); } catch (_) { }
           }
-          try { startBgMusic(); } catch (_) {}
+          try { startBgMusic(); } catch (_) { }
           if (holdTimer) {
             clearInterval(holdTimer);
             holdTimer = null;
