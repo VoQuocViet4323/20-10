@@ -1517,11 +1517,11 @@
       function spCreateFloatingImages() {
         spFloatingGroup = new THREE.Group();
         scene.add(spFloatingGroup);
-        const total = 32, grid = 16, used = [];
+        const total = 24, grid = 14, used = [];
         const glowTex = spGlowTexture(128);
 
         function findPos(size) {
-          const d = size * 1.5 + 1;
+          const d = size * 1.5 + 1.2;
           for (let i = 0; i < 60; i++) {
             const x = (Math.random() - .5) * grid, y = (Math.random() - .5) * grid, z = (Math.random() - .5) * grid;
             if (used.every(p => Math.hypot(x - p.x, y - p.y, z - p.z) >= d)) {
@@ -1532,13 +1532,17 @@
           return { x: (Math.random() - .5) * grid, y: (Math.random() - .5) * grid, z: (Math.random() - .5) * grid };
         }
 
+        const len = (spTextures && spTextures.length) ? spTextures.length : 1;
+
         for (let i = 0; i < total; i++) {
-          const tex = spTextures[i % spTextures.length];
-          const sv = 0.6 + Math.random() * 1.6, w = 1.5 * sv, h = 1.1 * sv, cr = 0.15 * sv;
+          const tex = spTextures[i % len];
+          // Kích thước ảnh to, rõ ràng và viền bo góc tinh tế
+          const sv = isMobileSP ? (1.0 + Math.random() * 0.45) : (1.25 + Math.random() * 0.6);
+          const w = 1.9 * sv, h = 1.4 * sv, cr = 0.16 * sv;
           const ig = new THREE.Group();
 
           const gMat = new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false });
-          ig.add(new THREE.Mesh(spRoundedRectGeo(w * 1.4, h * 1.4, cr * 1.4), gMat));
+          ig.add(new THREE.Mesh(spRoundedRectGeo(w * 1.35, h * 1.35, cr * 1.35), gMat));
 
           const iMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true, opacity: 0 });
           ig.add(new THREE.Mesh(spRoundedRectGeo(w, h, cr), iMat));
@@ -1549,13 +1553,13 @@
           ig.userData = {
             startPos: ig.position.clone(),
             targetPos: new THREE.Vector3(tp.x, tp.y, tp.z),
-            floatSpeedY: 0.3 + Math.random() * 0.5,
-            floatAmplY: 0.1 + Math.random() * 0.2,
+            floatSpeedY: 0.1 + Math.random() * 0.12,  // Nhấp nhô bồng bềnh rất chậm
+            floatAmplY: 0.08 + Math.random() * 0.1,
             floatPhase: Math.random() * Math.PI * 2,
-            delay: Math.random() * 0.5,
+            delay: Math.random() * 0.4,
             basePos: new THREE.Vector3(tp.x, tp.y, tp.z),
             iMat, gMat,
-            driftSpeed: 0.002 + Math.random() * 0.003,
+            driftSpeed: 0.00035 + Math.random() * 0.00045, // Tốc độ trôi bay chậm rãi ~8 lần giúp người xem dễ dàng ngắm ảnh
             baseZ: tp.z
           };
           spFloatingGroup.add(ig);
@@ -1834,19 +1838,57 @@
           bg.style.opacity = '1';
         }
 
+        function createDiverseFallbackTextures() {
+          const titles = ['Minh Khuê 💕', '20/10 ✨', 'Yêu Em ❤️', 'Xinh Đẹp 🌸'];
+          const colors = [
+            ['#ff758c', '#ff7eb3'],
+            ['#f857a6', '#ff5858'],
+            ['#ff9a9e', '#fecfef'],
+            ['#a18cd1', '#fbc2eb']
+          ];
+          return titles.map((title, i) => {
+            const c = document.createElement('canvas'); c.width = c.height = 300;
+            const ctx = c.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 300, 300);
+            grad.addColorStop(0, colors[i % colors.length][0]);
+            grad.addColorStop(1, colors[i % colors.length][1]);
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, 300, 300);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 36px "Pacifico", cursive';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(title, 150, 150);
+            const tex = new THREE.CanvasTexture(c);
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.isFallback = true;
+            return tex;
+          });
+        }
+
+        function applyTexturesToExistingMeshes(textures) {
+          if (!textures || !textures.length) return;
+          textures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
+          if (spMeshes && spMeshes.length > 0) {
+            spMeshes.forEach((mesh, idx) => {
+              if (mesh.material) {
+                mesh.material.map = textures[idx % textures.length];
+                mesh.material.needsUpdate = true;
+              }
+            });
+          }
+          if (spFloatingImages && spFloatingImages.length > 0) {
+            spFloatingImages.forEach((ig, idx) => {
+              if (ig.userData && ig.userData.iMat) {
+                ig.userData.iMat.map = textures[idx % textures.length];
+                ig.userData.iMat.needsUpdate = true;
+              }
+            });
+          }
+        }
+
         // Dựng quả cầu 3D với textures đã tải sẵn
         function doBuildSphere() {
           if (!spTextures || !spTextures.length) {
-            const c = document.createElement('canvas'); c.width = c.height = 256;
-            const ctx = c.getContext('2d');
-            const grad = ctx.createLinearGradient(0, 0, 256, 256);
-            grad.addColorStop(0, '#ff758c'); grad.addColorStop(1, '#ff7eb3');
-            ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 256);
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 36px "Pacifico", cursive';
-            ctx.textAlign = 'center'; ctx.fillText('20/10 💕', 128, 140);
-            const fallbackTex = new THREE.CanvasTexture(c);
-            fallbackTex.colorSpace = THREE.SRGBColorSpace;
-            spTextures = [fallbackTex];
+            spTextures = createDiverseFallbackTextures();
           } else {
             spTextures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
           }
@@ -1911,8 +1953,8 @@
         }
 
         if (spIsExploded) {
-          spExplosionProgress = Math.min(1, spExplosionProgress + 0.018);
-          spFadeProgress = Math.min(1, spFadeProgress + 0.04);
+          spExplosionProgress = Math.min(1, spExplosionProgress + 0.007);
+          spFadeProgress = Math.min(1, spFadeProgress + 0.02);
           spGroup.children.forEach(child => {
             if (child.material) {
               child.material.opacity = Math.max(0, 1 - spFadeProgress);
@@ -1922,20 +1964,21 @@
           spClickSphere.visible = false;
 
           if (spFloatingGroup) {
-            spDriftTiltAngle += spDriftTiltDir * 0.0003;
-            if (spDriftTiltAngle >= 0.25) { spDriftTiltAngle = 0.25; spDriftTiltDir = -1; }
-            else if (spDriftTiltAngle <= -0.25) { spDriftTiltAngle = -0.25; spDriftTiltDir = 1; }
+            spDriftTiltAngle += spDriftTiltDir * 0.0001;
+            if (spDriftTiltAngle >= 0.16) { spDriftTiltAngle = 0.16; spDriftTiltDir = -1; }
+            else if (spDriftTiltAngle <= -0.16) { spDriftTiltAngle = -0.16; spDriftTiltDir = 1; }
             spFloatingGroup.rotation.y = spDriftTiltAngle;
           }
 
-          const maxY = 10, minY = -10;
+          const maxY = 13, minY = -13;
           spFloatingImages.forEach((img, idx) => {
             const d = img.userData;
             const dp = Math.max(0, (spExplosionProgress - d.delay) / (1 - d.delay));
             if (dp > 0) {
               const t = Math.min(1, dp), eased = 1 - Math.pow(1 - t, 2);
-              const fY = Math.sin(spTime * 2 * d.floatSpeedY + d.floatPhase) * d.floatAmplY;
-              d.basePos.y += d.driftSpeed * 12;
+              const fY = Math.sin(spTime * d.floatSpeedY + d.floatPhase) * d.floatAmplY;
+              // Tốc độ bay lên chậm rãi và dịu dàng (~8 lần chậm hơn trước) để người xem ngắm rõ từng ảnh
+              d.basePos.y += d.driftSpeed * 1.5;
 
               if (eased < 1) {
                 img.position.x = d.startPos.x + (d.targetPos.x - d.startPos.x) * eased;
@@ -1949,13 +1992,13 @@
 
               if (d.basePos.y > maxY) {
                 d.basePos.y = minY;
-                d.basePos.x = (Math.random() - .5) * 16;
-                d.baseZ = (Math.random() - .5) * 16;
+                d.basePos.x = (Math.random() - .5) * 14;
+                d.baseZ = (Math.random() - .5) * 14;
               }
 
-              const op = Math.min(1, dp * 2);
+              const op = Math.min(1, dp * 1.8);
               d.iMat.opacity = op;
-              if (d.gMat) d.gMat.opacity = op * (0.65 + Math.sin(spTime * 3 + idx * 0.5) * 0.25);
+              if (d.gMat) d.gMat.opacity = op * (0.65 + Math.sin(spTime * 1.5 + idx * 0.5) * 0.25);
             }
           });
         } else if (spIntroComplete) {
@@ -2067,12 +2110,15 @@
         const loader = new THREE.TextureLoader();
         const sphereImgs = (cfg.sphereImages && cfg.sphereImages.length) ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg'];
         const loadSingleTex = (url) => new Promise(resolve => {
-          loader.load(url, tex => resolve(tex), undefined, () => resolve(null));
+          loader.load(url, tex => {
+            if (tex) tex.colorSpace = THREE.SRGBColorSpace;
+            resolve(tex);
+          }, undefined, () => resolve(null));
         });
         Promise.all(sphereImgs.map(loadSingleTex)).then(textures => {
           const valid = textures.filter(t => t !== null);
           if (valid.length > 0) {
-            spTextures = valid;
+            applyTexturesToExistingMeshes(valid);
           }
         });
 
