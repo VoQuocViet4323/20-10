@@ -1026,6 +1026,9 @@
   <!-- ── CANVAS 3D WEBGL ── -->
   <canvas id="webglCanvas"></canvas>
 
+  <!-- Dữ liệu hình ảnh Offline / Base64 chống lỗi CORS trên giao thức file:/// -->
+  <script src="photos_data.js"></script>
+
   <!-- ================================================================
          CẤU HÌNH DỄ DÀNG ĐIỀU CHỈNH (CONFIG)
          ================================================================ -->
@@ -1044,11 +1047,8 @@
       // Các từ morph hạt ánh sáng lần lượt xuất hiện
       morphTexts: ['Chúc Mừng', 'Ngày 20/10', 'Minh Khuê 💕'],
 
-      // Ảnh biến hình từ hạt (dùng ảnh người yêu / kỷ niệm)
-      particleImage: 'photos/1.jpg',
-
-      // Danh sách ảnh tạo nên Quả Cầu Vũ Trụ 3D (xoay quanh không gian)
-      sphereImages: [
+      // Danh sách ảnh tạo nên Quả Cầu Vũ Trụ 3D (tự động dùng Base64 khi mở file trực tiếp để không bị lỗi CORS)
+      sphereImages: (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length) ? window.SPHERE_PHOTO_DATA : [
         'photos/1.jpg',
         'photos/2.jpg',
         'photos/3.jpg',
@@ -1058,7 +1058,7 @@
       // Nội dung bức thư tình
       letter: {
         text: "Gửi em, cô gái ngọt ngào của anh 💌\n\nChúc mừng ngày Phụ Nữ Việt Nam 20/10 thật hạnh phúc nhé em yêu!\n\nCảm ơn em vì đã xuất hiện và mang đến cho thế giới của anh vô vàn nụ cười, sự dịu dàng và những điều ấm áp nhất.\nMỗi khoảnh khắc được cùng em sẻ chia đều là món quà quý giá mà anh luôn trân trọng từng giây từng phút.\n\nChúc cô gái của anh luôn xinh đẹp, rạng rỡ, bình an và mãi luôn là niềm hạnh phúc ngọt ngào nhất của anh.\n\nAnh yêu em rất nhiều, hôm nay và mãi mãi về sau! ❤️",
-        image: 'photos/2.jpg',
+        image: (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA[1]) || 'photos/2.jpg',
         caption: 'Khoảnh khắc ngọt ngào của chúng mình 💕'
       },
 
