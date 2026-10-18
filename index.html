@@ -1,775 +1,924 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Chúc Mừng 20/10 💖">
-    <link rel="apple-touch-icon" href="assets/images/icons/couple.png">
-    <link rel="icon" type="image/png" href="assets/images/icons/couple.png">
-    <meta name="theme-color" content="#1b0a1c">
-    <title>Chúc Mừng Ngày 20/10 Em Yêu 💖</title>
-
-    <!-- Google Fonts hỗ trợ tiếng Việt trọn vẹn -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Dancing+Script:wght@400;600;700&family=Pacifico&family=Quicksand:wght@500;600;700&display=swap">
-
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            margin: 0;
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-            min-height: 100vh;
-            min-height: 100dvh;
-            background-color: #000000;
-            color: #ffffff;
-            font-family: "Pacifico", "Dancing Script", cursive;
-            user-select: none;
-            -webkit-user-select: none;
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-        }
-
-        canvas#webglCanvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-        }
-
-        /* ── MÀN HÌNH TẢI (LOADING) ── */
-        #loading {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at center, #260d23 0%, #0d040c 70%, #000000 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease-out;
-        }
-
-        #loading .loading-heart {
-            font-size: 52px;
-            animation: pulseHeart 1.4s ease-in-out infinite;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 15px rgba(255, 105, 180, 0.7));
-        }
-
-        @keyframes pulseHeart {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.18); }
-        }
-
-        #loading span {
-            font-size: 22px;
-            letter-spacing: 2px;
-            margin-bottom: 18px;
-            color: #ffd1dc;
-            text-shadow: 0 0 12px rgba(255, 105, 180, 0.6);
-            font-family: 'Quicksand', sans-serif;
-            font-weight: 600;
-        }
-
-        #progress-container {
-            width: 65%;
-            max-width: 280px;
-            height: 8px;
-            background-color: rgba(255, 255, 255, 0.12);
-            border-radius: 999px;
-            overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 182, 193, 0.2);
-        }
-
-        #progress {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #ff69b4, #ff85a2, #ffd1dc);
-            transition: width 0.35s ease;
-            border-radius: 999px;
-            box-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
-        }
-
-        /* ── MÀN HÌNH MẬT MÃ (PASSCODE SCREEN) ── */
-        #passcodeScreen {
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(rgba(70, 20, 50, 0.88), rgba(25, 6, 22, 0.94)),
-                        linear-gradient(160deg, #32102e 0%, #120511 100%);
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: calc(env(safe-area-inset-top, 0px) + 24px) 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
-            overflow: hidden;
-            touch-action: manipulation;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", 'Quicksand', sans-serif;
-        }
-
-        #passcodeScreen.visible {
-            display: flex;
-        }
-
-        #passcodeScreen.hiding {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.6s ease-out;
-        }
-
-        .passcode-bears {
-            position: relative;
-            width: 100%;
-            max-width: 380px;
-            height: 180px;
-            flex-shrink: 0;
-            margin-top: 10px;
-        }
-
-        .passcode-bear {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            height: clamp(140px, 32vw, 200px);
-            width: auto;
-            object-fit: contain;
-            transition: left 0.4s cubic-bezier(0.34, 1.3, 0.64, 1), right 0.4s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.3s;
-            filter: drop-shadow(0 6px 14px rgba(0,0,0,0.3));
-        }
-
-        .passcode-bear.left { left: 5%; }
-        .passcode-bear.right { right: 5%; left: auto; }
-        .passcode-bear.left.pos-0 { left: 5%; }
-        .passcode-bear.right.pos-0 { right: 5%; }
-        .passcode-bear.left.pos-1 { left: 12%; }
-        .passcode-bear.right.pos-1 { right: 12%; }
-        .passcode-bear.left.pos-2 { left: 20%; }
-        .passcode-bear.right.pos-2 { right: 20%; }
-        .passcode-bear.left.pos-3 { left: 28%; }
-        .passcode-bear.right.pos-3 { right: 28%; }
-        .passcode-bear.left.pos-4 { left: 36%; }
-        .passcode-bear.right.pos-4 { right: 36%; }
-
-        .passcode-couple-img {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            height: clamp(160px, 36vw, 220px);
-            width: auto;
-            object-fit: contain;
-            opacity: 0;
-            pointer-events: none;
-            transition: transform 0.6s cubic-bezier(0.34, 1.5, 0.64, 1), opacity 0.5s ease;
-            filter: drop-shadow(0 8px 24px rgba(255, 105, 180, 0.4));
-        }
-
-        .passcode-bears.show-couple .passcode-bear {
-            opacity: 0;
-        }
-
-        .passcode-bears.show-couple .passcode-couple-img {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.05);
-        }
-
-        .passcode-bears.show-couple ~ .passcode-info-group,
-        .passcode-bears.show-couple ~ .passcode-keypad-wrap {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-        }
-
-        .hearts-passcode {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        .passcode-bears.show-couple ~ .hearts-passcode {
-            opacity: 1;
-        }
-
-        .hearts-passcode .heart-fly {
-            position: absolute;
-            bottom: -50px;
-            font-size: 26px;
-            animation: heartFloatUp 3.5s linear infinite;
-        }
-
-        @keyframes heartFloatUp {
-            0% { transform: translateY(0) scale(0.7) rotate(0deg); opacity: 0; }
-            15% { opacity: 0.95; }
-            85% { opacity: 0.85; }
-            100% { transform: translateY(-105vh) scale(1.3) rotate(30deg); opacity: 0; }
-        }
-
-        .passcode-info-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .passcode-title {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            text-align: center;
-            letter-spacing: 0.5px;
-            text-shadow: 0 0 10px rgba(255, 182, 193, 0.5);
-        }
-
-        .passcode-subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        .passcode-dots {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 15px;
-        }
-
-        .passcode-dot {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.45);
-            background: transparent;
-            transition: all 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
-        }
-
-        .passcode-dot.filled {
-            background: #ff758f;
-            border-color: #ff758f;
-            box-shadow: 0 0 12px #ff758f;
-            transform: scale(1.15);
-        }
-
-        .passcode-dot.error {
-            border-color: #ff4d4f;
-            background: #ff4d4f;
-            animation: shakeDots 0.4s ease;
-        }
-
-        @keyframes shakeDots {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-8px); }
-            40% { transform: translateX(8px); }
-            60% { transform: translateX(-6px); }
-            80% { transform: translateX(6px); }
-        }
-
-        .passcode-keypad-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 320px;
-            margin-bottom: 10px;
-        }
-
-        .passcode-keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px 24px;
-            width: 100%;
-        }
-
-        .passcode-btn {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            justify-self: center;
-            background: rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-            color: #ffffff;
-            font-size: 28px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .passcode-btn:active {
-            background: rgba(255, 117, 143, 0.4);
-            transform: scale(0.92);
-            box-shadow: 0 2px 8px rgba(255, 105, 180, 0.4);
-        }
-
-        .passcode-btn.empty {
-            background: transparent;
-            border-color: transparent;
-            box-shadow: none;
-            cursor: default;
-        }
-
-        .passcode-cancel {
-            margin-top: 14px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 15px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px 18px;
-            font-family: inherit;
-            transition: color 0.2s;
-        }
-
-        .passcode-cancel:hover {
-            color: #ffd1dc;
-        }
-
-        /* ── NÚT GIỮ ĐỂ BẮT ĐẦU (START WRAP) ── */
-        #start-wrap {
-            position: fixed;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 36px);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 250;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            touch-action: manipulation;
-            transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
-        }
-
-        #start-wrap.held {
-            transform: translateX(-50%) scale(1.1);
-        }
-
-        #start-label {
-            font-family: "Pacifico", cursive;
-            color: rgba(255, 192, 203, 0.95);
-            font-size: 15px;
-            text-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
-            letter-spacing: 1px;
-            white-space: nowrap;
-        }
-
-        #start-wrap svg {
-            width: 76px;
-            height: 76px;
-            filter: drop-shadow(0 0 12px rgba(255, 105, 180, 0.6));
-        }
-
-        .ring-pulse {
-            fill: rgba(255, 105, 180, 0.15);
-            animation: ringPulseAnim 2.2s ease-in-out infinite;
-        }
-
-        @keyframes ringPulseAnim {
-            0%, 100% { opacity: 0.6; transform: scale(1); transform-origin: center; }
-            50% { opacity: 0.2; transform: scale(1.08); transform-origin: center; }
-        }
-
-        .ring-track {
-            fill: none;
-            stroke: rgba(255, 182, 193, 0.25);
-            stroke-width: 3.5;
-        }
-
-        .ring-fill {
-            fill: none;
-            stroke: #ff69b4;
-            stroke-width: 4;
-            stroke-linecap: round;
-            stroke-dasharray: 163.36;
-            stroke-dashoffset: 163.36;
-            transform-origin: 34px 34px;
-            transform: rotate(-90deg);
-            transition: stroke-dashoffset 1s linear;
-        }
-
-        /* ── GỢI Ý CLICK QUẢ CẦU & NÚT GÓC ── */
-        #sphere-click-hint {
-            position: fixed;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 300;
-            padding: 12px 28px;
-            background: rgba(20, 5, 18, 0.75);
-            color: #ffd1dc;
-            font-size: 1.05rem;
-            border-radius: 999px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            font-family: "Pacifico", cursive;
-            letter-spacing: 1px;
-            border: 1px solid rgba(255, 182, 193, 0.35);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
-
-        #sphere-click-hint.visible {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-6px);
-        }
-
-        #btn-flying-corner {
-            position: fixed;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
-            right: 24px;
-            z-index: 320;
-            display: none;
-            padding: 12px 20px;
-            font-size: 22px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 999px;
-            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
-            color: #fff;
-            cursor: pointer;
-            box-shadow: 0 4px 18px rgba(255, 105, 180, 0.5);
-            transition: transform 0.25s, box-shadow 0.25s;
-            animation: bounceBtn 2s infinite;
-        }
-
-        @keyframes bounceBtn {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        #btn-flying-corner.visible {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        #btn-flying-corner:hover {
-            transform: scale(1.08);
-            box-shadow: 0 8px 24px rgba(255, 105, 180, 0.7);
-        }
-
-        /* ── NÚT ĐIỀU KHIỂN NHẠC GÓC TRÊN ── */
-        #music-toggle {
-            position: fixed;
-            top: calc(env(safe-area-inset-top, 0px) + 16px);
-            right: 16px;
-            z-index: 999;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(30, 10, 26, 0.65);
-            border: 1px solid rgba(255, 182, 193, 0.4);
-            color: #ffd1dc;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-            transition: all 0.3s ease;
-        }
-
-        #music-toggle.playing {
-            animation: rotateDisk 4s linear infinite;
-            border-color: #ff69b4;
-            box-shadow: 0 0 16px rgba(255, 105, 180, 0.6);
-        }
-
-        @keyframes rotateDisk {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* ── MÀN HÌNH BỨC THƯ CUPID (CUPID LETTER OVERLAY) ── */
-        #cupid-letter-overlay {
-            position: fixed;
-            inset: 0;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 500;
-            pointer-events: none;
-            background: rgba(10, 2, 8, 0.65);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-        }
-
-        #cupid-letter-overlay.visible {
-            display: flex;
-            pointer-events: auto;
-        }
-
-        #cupid-flying-img {
-            position: absolute;
-            width: clamp(130px, 26vw, 230px);
-            height: auto;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            z-index: 510;
-            filter: drop-shadow(0 8px 20px rgba(255, 105, 180, 0.5));
-        }
-
-        #letter-envelope-img {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: clamp(150px, 32vw, 260px);
-            height: auto;
-            cursor: pointer;
-            display: none;
-            z-index: 520;
-            transition: transform 0.25s ease;
-            filter: drop-shadow(0 12px 30px rgba(255, 105, 180, 0.55));
-        }
-
-        #letter-envelope-img.visible {
-            display: block;
-            animation: envelopeAppear 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
-        }
-
-        @keyframes envelopeAppear {
-            from { opacity: 0; transform: translate(-50%, -50%) scale(0.6) rotate(-15deg); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-        }
-
-        #letter-envelope-img:hover {
-            transform: translate(-50%, -50%) scale(1.08);
-        }
-
-        #cupid-letter-frame {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: min(92vw, 680px);
-            max-height: 88vh;
-            max-height: 88dvh;
-            display: none;
-            flex-direction: column;
-            z-index: 550;
-            border-radius: 20px;
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 182, 193, 0.4), 0 0 40px rgba(255, 105, 180, 0.3);
-            background: linear-gradient(135deg, #fff2f5 0%, #ffe4ec 35%, #fff6f8 65%, #ffd4e0 100%);
-            pointer-events: auto;
-            overflow: visible;
-        }
-
-        #cupid-letter-frame.visible {
-            display: flex;
-            animation: letterCardAppear 0.6s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
-        }
-
-        @keyframes letterCardAppear {
-            from { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-
-        .letter-content {
-            position: relative;
-            z-index: 2;
-            padding: clamp(24px, 5vw, 36px) clamp(22px, 5vw, 40px) clamp(40px, 8vw, 60px);
-            overflow-y: auto;
-            max-height: 75vh;
-            scrollbar-width: thin;
-            font-family: "Pacifico", "Dancing Script", -apple-system, serif;
-            font-size: clamp(1rem, 2.2vw, 1.25rem);
-            color: #7b2850;
-            line-height: 1.8;
-            letter-spacing: 0.02em;
-            text-align: center;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .letter-content .letter-cursor {
-            display: inline-block;
-            width: 2.5px;
-            height: 1.2em;
-            background: #d84a6f;
-            margin-left: 3px;
-            animation: blinkCursor 0.8s infinite;
-            vertical-align: text-bottom;
-        }
-
-        @keyframes blinkCursor {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        .letter-image-wrap {
-            margin-top: 1.4rem;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            opacity: 0;
-            transform: translateY(16px) scale(0.92);
-        }
-
-        .letter-image-wrap.visible {
-            animation: letterImgShow 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-
-        @keyframes letterImgShow {
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .letter-inline-image {
-            display: block;
-            max-width: min(85vw, 340px);
-            width: auto;
-            max-height: 36vh;
-            margin: 0 auto;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(123, 40, 80, 0.25), 0 0 0 5px #ffffff;
-            object-fit: cover;
-        }
-
-        .letter-image-caption {
-            display: block;
-            margin-top: 0.8em;
-            font-size: 1.1em;
-            color: #c93b66;
-            font-weight: 600;
-            letter-spacing: 0.1em;
-        }
-
-        .letter-close-btn {
-            position: absolute;
-            top: 12px;
-            right: 14px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(216, 74, 111, 0.15);
-            border: none;
-            color: #8b3a62;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            transition: all 0.2s;
-        }
-
-        .letter-close-btn:hover {
-            background: #d84a6f;
-            color: #fff;
-            transform: scale(1.1);
-        }
-
-        .letter-butterfly-left {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 4;
-            pointer-events: none;
-            transform: translate(-45%, -45%) rotate(-8deg);
-        }
-
-        .letter-butterfly-left img {
-            width: clamp(160px, 28vw, 240px);
-            height: auto;
-            filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.2));
-        }
-
-        .letter-butterfly-right {
-            position: absolute;
-            top: 0;
-            right: 0;
-            z-index: 4;
-            pointer-events: none;
-            transform: translate(45%, -45%) rotate(8deg);
-        }
-
-        .letter-butterfly-right img {
-            width: clamp(90px, 18vw, 150px);
-            height: auto;
-            filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.2));
-        }
-
-        .letter-bottom-bg {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 35%;
-            z-index: 1;
-            pointer-events: none;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            background: url('assets/nenthugocduoi.png') no-repeat bottom center;
-            background-size: 100% auto;
-            opacity: 0.6;
-        }
-
-        #transition-overlay {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 400;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.8s ease;
-        }
-
-        /* Particles nền CSS */
-        #sphere-particles-bg {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 5;
-            opacity: 0;
-            transition: opacity 1s;
-        }
-
-        .sp-particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 105, 180, 0.65);
-            border-radius: 50%;
-            animation: spFloat 14s infinite ease-in-out;
-            box-shadow: 0 0 8px rgba(255, 105, 180, 0.8);
-        }
-
-        @keyframes spFloat {
-            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            15% { opacity: 1; }
-            85% { opacity: 1; }
-            95%, 100% { transform: translateY(-100vh) rotate(540deg); opacity: 0; }
-        }
-    </style>
-
-    <!-- Import Map cho Three.js và thư viện phụ trợ -->
-    <script type="importmap">
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Chúc Mừng 20/10 💖">
+  <link rel="apple-touch-icon" href="assets/images/icons/couple.png">
+  <link rel="icon" type="image/png" href="assets/images/icons/couple.png">
+  <meta name="theme-color" content="#1b0a1c">
+  <title>Chúc Mừng Ngày 20/10 💖</title>
+
+  <!-- Google Fonts hỗ trợ tiếng Việt trọn vẹn -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Dancing+Script:wght@400;600;700&family=Pacifico&family=Quicksand:wght@500;600;700&display=swap">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: "Pacifico", "Dancing Script", cursive;
+      user-select: none;
+      -webkit-user-select: none;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    canvas#webglCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
+    }
+
+    /* ── MÀN HÌNH TẢI (LOADING) ── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #260d23 0%, #0d040c 70%, #000000 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease-out;
+    }
+
+    #loading .loading-heart {
+      font-size: 52px;
+      animation: pulseHeart 1.4s ease-in-out infinite;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 15px rgba(255, 105, 180, 0.7));
+    }
+
+    @keyframes pulseHeart {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.18);
+      }
+    }
+
+    #loading span {
+      font-size: 22px;
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+      color: #ffd1dc;
+      text-shadow: 0 0 12px rgba(255, 105, 180, 0.6);
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 600;
+    }
+
+    #progress-container {
+      width: 65%;
+      max-width: 280px;
+      height: 8px;
+      background-color: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 182, 193, 0.2);
+    }
+
+    #progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff69b4, #ff85a2, #ffd1dc);
+      transition: width 0.35s ease;
+      border-radius: 999px;
+      box-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+    }
+
+    /* ── MÀN HÌNH MẬT MÃ (PASSCODE SCREEN) ── */
+    #passcodeScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(rgba(70, 20, 50, 0.88), rgba(25, 6, 22, 0.94)),
+        linear-gradient(160deg, #32102e 0%, #120511 100%);
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(env(safe-area-inset-top, 0px) + 24px) 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+      overflow: hidden;
+      touch-action: manipulation;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", 'Quicksand', sans-serif;
+    }
+
+    #passcodeScreen.visible {
+      display: flex;
+    }
+
+    #passcodeScreen.hiding {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease-out;
+    }
+
+    .passcode-bears {
+      position: relative;
+      width: 100%;
+      max-width: 380px;
+      height: 180px;
+      flex-shrink: 0;
+      margin-top: 10px;
+    }
+
+    .passcode-bear {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: clamp(140px, 32vw, 200px);
+      width: auto;
+      object-fit: contain;
+      transition: left 0.4s cubic-bezier(0.34, 1.3, 0.64, 1), right 0.4s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.3s;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
+    }
+
+    .passcode-bear.left {
+      left: 5%;
+    }
+
+    .passcode-bear.right {
+      right: 5%;
+      left: auto;
+    }
+
+    .passcode-bear.left.pos-0 {
+      left: 5%;
+    }
+
+    .passcode-bear.right.pos-0 {
+      right: 5%;
+    }
+
+    .passcode-bear.left.pos-1 {
+      left: 12%;
+    }
+
+    .passcode-bear.right.pos-1 {
+      right: 12%;
+    }
+
+    .passcode-bear.left.pos-2 {
+      left: 20%;
+    }
+
+    .passcode-bear.right.pos-2 {
+      right: 20%;
+    }
+
+    .passcode-bear.left.pos-3 {
+      left: 28%;
+    }
+
+    .passcode-bear.right.pos-3 {
+      right: 28%;
+    }
+
+    .passcode-bear.left.pos-4 {
+      left: 36%;
+    }
+
+    .passcode-bear.right.pos-4 {
+      right: 36%;
+    }
+
+    .passcode-couple-img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      height: clamp(160px, 36vw, 220px);
+      width: auto;
+      object-fit: contain;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.6s cubic-bezier(0.34, 1.5, 0.64, 1), opacity 0.5s ease;
+      filter: drop-shadow(0 8px 24px rgba(255, 105, 180, 0.4));
+    }
+
+    .passcode-bears.show-couple .passcode-bear {
+      opacity: 0;
+    }
+
+    .passcode-bears.show-couple .passcode-couple-img {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+
+    .passcode-bears.show-couple~.passcode-info-group,
+    .passcode-bears.show-couple~.passcode-keypad-wrap {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .hearts-passcode {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .passcode-bears.show-couple~.hearts-passcode {
+      opacity: 1;
+    }
+
+    .hearts-passcode .heart-fly {
+      position: absolute;
+      bottom: -50px;
+      font-size: 26px;
+      animation: heartFloatUp 3.5s linear infinite;
+    }
+
+    @keyframes heartFloatUp {
+      0% {
+        transform: translateY(0) scale(0.7) rotate(0deg);
+        opacity: 0;
+      }
+
+      15% {
+        opacity: 0.95;
+      }
+
+      85% {
+        opacity: 0.85;
+      }
+
+      100% {
+        transform: translateY(-105vh) scale(1.3) rotate(30deg);
+        opacity: 0;
+      }
+    }
+
+    .passcode-info-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .passcode-title {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-align: center;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 10px rgba(255, 182, 193, 0.5);
+    }
+
+    .passcode-subtitle {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .passcode-dots {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 15px;
+    }
+
+    .passcode-dot {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      background: transparent;
+      transition: all 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    .passcode-dot.filled {
+      background: #ff758f;
+      border-color: #ff758f;
+      box-shadow: 0 0 12px #ff758f;
+      transform: scale(1.15);
+    }
+
+    .passcode-dot.error {
+      border-color: #ff4d4f;
+      background: #ff4d4f;
+      animation: shakeDots 0.4s ease;
+    }
+
+    @keyframes shakeDots {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-8px);
+      }
+
+      40% {
+        transform: translateX(8px);
+      }
+
+      60% {
+        transform: translateX(-6px);
+      }
+
+      80% {
+        transform: translateX(6px);
+      }
+    }
+
+    .passcode-keypad-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: 10px;
+    }
+
+    .passcode-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px 24px;
+      width: 100%;
+    }
+
+    .passcode-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      justify-self: center;
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .passcode-btn:active {
+      background: rgba(255, 117, 143, 0.4);
+      transform: scale(0.92);
+      box-shadow: 0 2px 8px rgba(255, 105, 180, 0.4);
+    }
+
+    .passcode-btn.empty {
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      cursor: default;
+    }
+
+    .passcode-cancel {
+      margin-top: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 15px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 18px;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+
+    .passcode-cancel:hover {
+      color: #ffd1dc;
+    }
+
+    /* ── NÚT GIỮ ĐỂ BẮT ĐẦU (START WRAP) ── */
+    #start-wrap {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 36px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 250;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      touch-action: none !important;
+      -webkit-touch-callout: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    #start-wrap * {
+      pointer-events: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
+    #start-wrap.held {
+      transform: translateX(-50%) scale(1.1);
+    }
+
+    #start-label {
+      font-family: "Pacifico", cursive;
+      color: rgba(255, 192, 203, 0.95);
+      font-size: 15px;
+      text-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    #start-wrap svg {
+      width: 76px;
+      height: 76px;
+      filter: drop-shadow(0 0 12px rgba(255, 105, 180, 0.6));
+    }
+
+    .ring-pulse {
+      fill: rgba(255, 105, 180, 0.15);
+      animation: ringPulseAnim 2.2s ease-in-out infinite;
+    }
+
+    @keyframes ringPulseAnim {
+
+      0%,
+      100% {
+        opacity: 0.6;
+        transform: scale(1);
+        transform-origin: center;
+      }
+
+      50% {
+        opacity: 0.2;
+        transform: scale(1.08);
+        transform-origin: center;
+      }
+    }
+
+    .ring-track {
+      fill: none;
+      stroke: rgba(255, 182, 193, 0.25);
+      stroke-width: 3.5;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke: #ff69b4;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 163.36;
+      stroke-dashoffset: 163.36;
+      transform-origin: 34px 34px;
+      transform: rotate(-90deg);
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    /* ── GỢI Ý CLICK QUẢ CẦU & NÚT GÓC ── */
+    #sphere-click-hint {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      padding: 12px 28px;
+      background: rgba(20, 5, 18, 0.75);
+      color: #ffd1dc;
+      font-size: 1.05rem;
+      border-radius: 999px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      font-family: "Pacifico", cursive;
+      letter-spacing: 1px;
+      border: 1px solid rgba(255, 182, 193, 0.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    #sphere-click-hint.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+
+    #btn-flying-corner {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+      right: 24px;
+      z-index: 320;
+      display: none;
+      padding: 12px 20px;
+      font-size: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(255, 105, 180, 0.5);
+      transition: transform 0.25s, box-shadow 0.25s;
+      animation: bounceBtn 2s infinite;
+    }
+
+    @keyframes bounceBtn {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    #btn-flying-corner.visible {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #btn-flying-corner:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 24px rgba(255, 105, 180, 0.7);
+    }
+
+    /* ── NÚT ĐIỀU KHIỂN NHẠC GÓC TRÊN ── */
+    #music-toggle {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 16px);
+      right: 16px;
+      z-index: 999;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(30, 10, 26, 0.65);
+      border: 1px solid rgba(255, 182, 193, 0.4);
+      color: #ffd1dc;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      transition: all 0.3s ease;
+    }
+
+    #music-toggle.playing {
+      animation: rotateDisk 4s linear infinite;
+      border-color: #ff69b4;
+      box-shadow: 0 0 16px rgba(255, 105, 180, 0.6);
+    }
+
+    @keyframes rotateDisk {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── MÀN HÌNH BỨC THƯ CUPID (CUPID LETTER OVERLAY) ── */
+    #cupid-letter-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 500;
+      pointer-events: none;
+      background: rgba(10, 2, 8, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    #cupid-letter-overlay.visible {
+      display: flex;
+      pointer-events: auto;
+    }
+
+    #cupid-flying-img {
+      position: absolute;
+      width: clamp(130px, 26vw, 230px);
+      height: auto;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 510;
+      filter: drop-shadow(0 8px 20px rgba(255, 105, 180, 0.5));
+    }
+
+    #letter-envelope-img {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: clamp(150px, 32vw, 260px);
+      height: auto;
+      cursor: pointer;
+      display: none;
+      z-index: 520;
+      transition: transform 0.25s ease;
+      filter: drop-shadow(0 12px 30px rgba(255, 105, 180, 0.55));
+    }
+
+    #letter-envelope-img.visible {
+      display: block;
+      animation: envelopeAppear 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+
+    @keyframes envelopeAppear {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.6) rotate(-15deg);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+      }
+    }
+
+    #letter-envelope-img:hover {
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+
+    #cupid-letter-frame {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(92vw, 680px);
+      max-height: 88vh;
+      max-height: 88dvh;
+      display: none;
+      flex-direction: column;
+      z-index: 550;
+      border-radius: 20px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 182, 193, 0.4), 0 0 40px rgba(255, 105, 180, 0.3);
+      background: linear-gradient(135deg, #fff2f5 0%, #ffe4ec 35%, #fff6f8 65%, #ffd4e0 100%);
+      pointer-events: auto;
+      overflow: visible;
+    }
+
+    #cupid-letter-frame.visible {
+      display: flex;
+      animation: letterCardAppear 0.6s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+    }
+
+    @keyframes letterCardAppear {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.85);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .letter-content {
+      position: relative;
+      z-index: 2;
+      padding: clamp(24px, 5vw, 36px) clamp(22px, 5vw, 40px) clamp(40px, 8vw, 60px);
+      overflow-y: auto;
+      max-height: 75vh;
+      scrollbar-width: thin;
+      font-family: "Pacifico", "Dancing Script", -apple-system, serif;
+      font-size: clamp(1rem, 2.2vw, 1.25rem);
+      color: #7b2850;
+      line-height: 1.8;
+      letter-spacing: 0.02em;
+      text-align: center;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .letter-content .letter-cursor {
+      display: inline-block;
+      width: 2.5px;
+      height: 1.2em;
+      background: #d84a6f;
+      margin-left: 3px;
+      animation: blinkCursor 0.8s infinite;
+      vertical-align: text-bottom;
+    }
+
+    @keyframes blinkCursor {
+
+      0%,
+      50% {
+        opacity: 1;
+      }
+
+      51%,
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .letter-image-wrap {
+      margin-top: 1.4rem;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+      opacity: 0;
+      transform: translateY(16px) scale(0.92);
+    }
+
+    .letter-image-wrap.visible {
+      animation: letterImgShow 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes letterImgShow {
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .letter-inline-image {
+      display: block;
+      max-width: min(85vw, 340px);
+      width: auto;
+      max-height: 36vh;
+      margin: 0 auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(123, 40, 80, 0.25), 0 0 0 5px #ffffff;
+      object-fit: cover;
+    }
+
+    .letter-image-caption {
+      display: block;
+      margin-top: 0.8em;
+      font-size: 1.1em;
+      color: #c93b66;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+
+    .letter-close-btn {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(216, 74, 111, 0.15);
+      border: none;
+      color: #8b3a62;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s;
+    }
+
+    .letter-close-btn:hover {
+      background: #d84a6f;
+      color: #fff;
+      transform: scale(1.1);
+    }
+
+    .letter-butterfly-left {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 4;
+      pointer-events: none;
+      transform: translate(-45%, -45%) rotate(-8deg);
+    }
+
+    .letter-butterfly-left img {
+      width: clamp(160px, 28vw, 240px);
+      height: auto;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.2));
+    }
+
+    .letter-butterfly-right {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 4;
+      pointer-events: none;
+      transform: translate(45%, -45%) rotate(8deg);
+    }
+
+    .letter-butterfly-right img {
+      width: clamp(90px, 18vw, 150px);
+      height: auto;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.2));
+    }
+
+    .letter-bottom-bg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 35%;
+      z-index: 1;
+      pointer-events: none;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+      background: url('assets/nenthugocduoi.png') no-repeat bottom center;
+      background-size: 100% auto;
+      opacity: 0.6;
+    }
+
+    #transition-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 400;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+
+    /* Particles nền CSS */
+    #sphere-particles-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0;
+      transition: opacity 1s;
+    }
+
+    .sp-particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 105, 180, 0.65);
+      border-radius: 50%;
+      animation: spFloat 14s infinite ease-in-out;
+      box-shadow: 0 0 8px rgba(255, 105, 180, 0.8);
+    }
+
+    @keyframes spFloat {
+
+      0%,
+      100% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+
+      15% {
+        opacity: 1;
+      }
+
+      85% {
+        opacity: 1;
+      }
+
+      95%,
+      100% {
+        transform: translateY(-100vh) rotate(540deg);
+        opacity: 0;
+      }
+    }
+  </style>
+
+  <!-- Import Map cho Three.js và thư viện phụ trợ -->
+  <script type="importmap">
     {
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
@@ -779,356 +928,357 @@
     }
     </script>
 </head>
+
 <body>
 
-    <!-- ── MÀN HÌNH TẢI NGUYÊN (LOADING) ── -->
-    <div id="loading">
-        <div class="loading-heart">💖</div>
-        <span id="loading-text">Đang kết nối vũ trụ yêu thương...</span>
-        <div id="progress-container">
-            <div id="progress"></div>
-        </div>
+  <!-- ── MÀN HÌNH TẢI NGUYÊN (LOADING) ── -->
+  <div id="loading">
+    <div class="loading-heart">💖</div>
+    <span id="loading-text">Đang kết nối vũ trụ yêu thương...</span>
+    <div id="progress-container">
+      <div id="progress"></div>
+    </div>
+  </div>
+
+  <!-- ── MÀN HÌNH NHẬP MẬT MÃ (PASSCODE) ── -->
+  <div id="passcodeScreen">
+    <div class="passcode-bears" id="passcodeBears">
+      <img src="assets/images/characters/bearwait.png" alt="" class="passcode-bear left pos-0" id="bearLeft">
+      <img src="assets/images/characters/bearflower.png" alt="" class="passcode-bear right pos-0" id="bearRight">
+      <img src="assets/images/icons/couple.png" alt="" class="passcode-couple-img" id="coupleImg">
     </div>
 
-    <!-- ── MÀN HÌNH NHẬP MẬT MÃ (PASSCODE) ── -->
-    <div id="passcodeScreen">
-        <div class="passcode-bears" id="passcodeBears">
-            <img src="assets/images/characters/bearwait.png" alt="" class="passcode-bear left pos-0" id="bearLeft">
-            <img src="assets/images/characters/bearflower.png" alt="" class="passcode-bear right pos-0" id="bearRight">
-            <img src="assets/images/icons/couple.png" alt="" class="passcode-couple-img" id="coupleImg">
-        </div>
-
-        <div class="hearts-passcode">
-            <span class="heart-fly" style="left:8%; animation-delay:0s; animation-duration:3.6s;">💕</span>
-            <span class="heart-fly" style="left:22%; animation-delay:0.5s; animation-duration:4.2s;">❤️</span>
-            <span class="heart-fly" style="left:38%; animation-delay:0.2s; animation-duration:3.8s;">💗</span>
-            <span class="heart-fly" style="left:52%; animation-delay:0.8s; animation-duration:4s;">💖</span>
-            <span class="heart-fly" style="left:68%; animation-delay:0.3s; animation-duration:3.5s;">💝</span>
-            <span class="heart-fly" style="left:84%; animation-delay:0.6s; animation-duration:4.3s;">💕</span>
-        </div>
-
-        <div class="passcode-info-group">
-            <div class="passcode-title" id="passcodeTitle">Nhập Mật Khẩu Yêu Thương</div>
-            <div class="passcode-subtitle" id="passcodeSubtitle">Mở món quà đặc biệt ngày 20/10 💕</div>
-            <div class="passcode-dots" id="passcodeDots">
-                <div class="passcode-dot" data-i="0"></div>
-                <div class="passcode-dot" data-i="1"></div>
-                <div class="passcode-dot" data-i="2"></div>
-                <div class="passcode-dot" data-i="3"></div>
-            </div>
-        </div>
-
-        <div class="passcode-keypad-wrap">
-            <div class="passcode-keypad">
-                <button type="button" class="passcode-btn" data-num="1">1</button>
-                <button type="button" class="passcode-btn" data-num="2">2</button>
-                <button type="button" class="passcode-btn" data-num="3">3</button>
-                <button type="button" class="passcode-btn" data-num="4">4</button>
-                <button type="button" class="passcode-btn" data-num="5">5</button>
-                <button type="button" class="passcode-btn" data-num="6">6</button>
-                <button type="button" class="passcode-btn" data-num="7">7</button>
-                <button type="button" class="passcode-btn" data-num="8">8</button>
-                <button type="button" class="passcode-btn" data-num="9">9</button>
-                <button type="button" class="passcode-btn empty"></button>
-                <button type="button" class="passcode-btn" data-num="0">0</button>
-                <button type="button" class="passcode-btn empty"></button>
-            </div>
-            <button type="button" class="passcode-cancel" id="passcodeCancel">Xóa lại từ đầu</button>
-        </div>
+    <div class="hearts-passcode">
+      <span class="heart-fly" style="left:8%; animation-delay:0s; animation-duration:3.6s;">💕</span>
+      <span class="heart-fly" style="left:22%; animation-delay:0.5s; animation-duration:4.2s;">❤️</span>
+      <span class="heart-fly" style="left:38%; animation-delay:0.2s; animation-duration:3.8s;">💗</span>
+      <span class="heart-fly" style="left:52%; animation-delay:0.8s; animation-duration:4s;">💖</span>
+      <span class="heart-fly" style="left:68%; animation-delay:0.3s; animation-duration:3.5s;">💝</span>
+      <span class="heart-fly" style="left:84%; animation-delay:0.6s; animation-duration:4.3s;">💕</span>
     </div>
 
-    <!-- ── NÚT GIỮ ĐỂ BẮT ĐẦU ── -->
-    <div id="start-wrap">
-        <div id="start-label">Giữ để bắt đầu ✨</div>
-        <svg viewBox="0 0 68 68">
-            <circle class="ring-pulse" cx="34" cy="34" r="28"/>
-            <circle class="ring-track" cx="34" cy="34" r="26"/>
-            <circle class="ring-fill" id="ring-fill" cx="34" cy="34" r="26"/>
-        </svg>
+    <div class="passcode-info-group">
+      <div class="passcode-title" id="passcodeTitle">Nhập Mật Khẩu Yêu Thương</div>
+      <div class="passcode-subtitle" id="passcodeSubtitle">Mở món quà đặc biệt ngày 20/10 💕</div>
+      <div class="passcode-dots" id="passcodeDots">
+        <div class="passcode-dot" data-i="0"></div>
+        <div class="passcode-dot" data-i="1"></div>
+        <div class="passcode-dot" data-i="2"></div>
+        <div class="passcode-dot" data-i="3"></div>
+      </div>
     </div>
 
-    <!-- ── GỢI Ý CLICK & NÚT GỌI THƯ ── -->
-    <div id="transition-overlay"></div>
-    <div id="sphere-click-hint" aria-hidden="true">Chạm vào quả cầu nhé ✨</div>
-    <button type="button" id="btn-flying-corner" aria-label="Mở thư tình">💌 Đọc thư</button>
-    <div id="sphere-particles-bg"></div>
-
-    <!-- ── NÚT BẬT / TẮT NHẠC ── -->
-    <button type="button" id="music-toggle" title="Bật/Tắt nhạc nền" aria-label="Bật hoặc tắt nhạc nền">🎵</button>
-
-    <!-- ── LÁ THƯ TÌNH CUPID ── -->
-    <div id="cupid-letter-overlay">
-        <img id="cupid-flying-img" src="assets/images/letters/cupidletter.png" alt="Cupid" />
-        <img id="letter-envelope-img" src="assets/images/letters/letterimage.png" alt="Phong bì" />
-        <div id="cupid-letter-frame">
-            <button class="letter-close-btn" id="letterCloseBtn" title="Đóng thư">&times;</button>
-            <div class="letter-butterfly-left"><img src="assets/buomtrai.png" alt="" /></div>
-            <div class="letter-butterfly-right"><img src="assets/buomphai.png" alt="" /></div>
-            <div class="letter-bottom-bg"></div>
-            <div class="letter-content" id="letterContent"></div>
-            <div class="letter-image-wrap" id="letterImageWrap" style="display:none">
-                <img class="letter-inline-image" id="letterInlineImage" src="" alt="Kỷ niệm">
-                <span class="letter-image-caption" id="letterImageCaption">Mãi yêu em ❤️</span>
-            </div>
-        </div>
+    <div class="passcode-keypad-wrap">
+      <div class="passcode-keypad">
+        <button type="button" class="passcode-btn" data-num="1">1</button>
+        <button type="button" class="passcode-btn" data-num="2">2</button>
+        <button type="button" class="passcode-btn" data-num="3">3</button>
+        <button type="button" class="passcode-btn" data-num="4">4</button>
+        <button type="button" class="passcode-btn" data-num="5">5</button>
+        <button type="button" class="passcode-btn" data-num="6">6</button>
+        <button type="button" class="passcode-btn" data-num="7">7</button>
+        <button type="button" class="passcode-btn" data-num="8">8</button>
+        <button type="button" class="passcode-btn" data-num="9">9</button>
+        <button type="button" class="passcode-btn empty"></button>
+        <button type="button" class="passcode-btn" data-num="0">0</button>
+        <button type="button" class="passcode-btn empty"></button>
+      </div>
+      <button type="button" class="passcode-cancel" id="passcodeCancel">Xóa lại từ đầu</button>
     </div>
+  </div>
 
-    <!-- ── CANVAS 3D WEBGL ── -->
-    <canvas id="webglCanvas"></canvas>
+  <!-- ── NÚT GIỮ ĐỂ BẮT ĐẦU ── -->
+  <div id="start-wrap">
+    <div id="start-label">Giữ để bắt đầu ✨</div>
+    <svg viewBox="0 0 68 68">
+      <circle class="ring-pulse" cx="34" cy="34" r="28" />
+      <circle class="ring-track" cx="34" cy="34" r="26" />
+      <circle class="ring-fill" id="ring-fill" cx="34" cy="34" r="26" />
+    </svg>
+  </div>
 
-    <!-- ================================================================
+  <!-- ── GỢI Ý CLICK & NÚT GỌI THƯ ── -->
+  <div id="transition-overlay"></div>
+  <div id="sphere-click-hint" aria-hidden="true">Chạm vào quả cầu nhé ✨</div>
+  <button type="button" id="btn-flying-corner" aria-label="Mở thư tình">💌 Đọc thư</button>
+  <div id="sphere-particles-bg"></div>
+
+  <!-- ── NÚT BẬT / TẮT NHẠC ── -->
+  <button type="button" id="music-toggle" title="Bật/Tắt nhạc nền" aria-label="Bật hoặc tắt nhạc nền">🎵</button>
+
+  <!-- ── LÁ THƯ TÌNH CUPID ── -->
+  <div id="cupid-letter-overlay">
+    <img id="cupid-flying-img" src="assets/images/letters/cupidletter.png" alt="Cupid" />
+    <img id="letter-envelope-img" src="assets/images/letters/letterimage.png" alt="Phong bì" />
+    <div id="cupid-letter-frame">
+      <button class="letter-close-btn" id="letterCloseBtn" title="Đóng thư">&times;</button>
+      <div class="letter-butterfly-left"><img src="assets/buomtrai.png" alt="" /></div>
+      <div class="letter-butterfly-right"><img src="assets/buomphai.png" alt="" /></div>
+      <div class="letter-bottom-bg"></div>
+      <div class="letter-content" id="letterContent"></div>
+      <div class="letter-image-wrap" id="letterImageWrap" style="display:none">
+        <img class="letter-inline-image" id="letterInlineImage" src="" alt="Kỷ niệm">
+        <span class="letter-image-caption" id="letterImageCaption">Mãi yêu em ❤️</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CANVAS 3D WEBGL ── -->
+  <canvas id="webglCanvas"></canvas>
+
+  <!-- ================================================================
          CẤU HÌNH DỄ DÀNG ĐIỀU CHỈNH (CONFIG)
          ================================================================ -->
-    <script>
+  <script>
     window.APP_CONFIG = {
-        // Tiêu đề trang & Biểu tượng
-        appTitle:          'Chúc Mừng Ngày 20/10 Em Yêu 💖',
-        appIcon:           'assets/images/icons/couple.png',
+      // Tiêu đề trang & Biểu tượng
+      appTitle: 'Chúc Mừng Ngày 20/10 Em Yêu 💖',
+      appIcon: 'assets/images/icons/couple.png',
 
-        // Mật khẩu mở khóa (4 chữ số, vd: 3008, 2010...)
-        enablePasscode:    true,
-        passcode:          '3008',
-        passcodeTitle:     'Nhập Mật Khẩu Yêu Thương',
-        passcodeSubtitle:  'Mở món quà đặc biệt ngày 20/10 💕',
+      // Mật khẩu mở khóa (4 chữ số, vd: 3008, 2010...)
+      enablePasscode: true,
+      passcode: '3008',
+      passcodeTitle: 'Nhập Mật Khẩu Yêu Thương',
+      passcodeSubtitle: 'Mở món quà đặc biệt ngày 20/10 💕',
 
-        // Các từ morph hạt ánh sáng lần lượt xuất hiện
-        morphTexts:        ['Chúc Mừng', 'Ngày 20/10', 'Minh Khuê 💕'],
+      // Các từ morph hạt ánh sáng lần lượt xuất hiện
+      morphTexts: ['Chúc Mừng', 'Ngày 20/10', 'Minh Khuê 💕'],
 
-        // Ảnh biến hình từ hạt (dùng ảnh người yêu / kỷ niệm)
-        particleImage:     'photos/1.jpg',
+      // Ảnh biến hình từ hạt (dùng ảnh người yêu / kỷ niệm)
+      particleImage: 'photos/1.jpg',
 
-        // Danh sách ảnh tạo nên Quả Cầu Vũ Trụ 3D (xoay quanh không gian)
-        sphereImages: [
-            'photos/1.jpg',
-            'photos/2.jpg',
-            'photos/3.jpg',
-            'photos/bouquet.jpg'
-        ],
+      // Danh sách ảnh tạo nên Quả Cầu Vũ Trụ 3D (xoay quanh không gian)
+      sphereImages: [
+        'photos/1.jpg',
+        'photos/2.jpg',
+        'photos/3.jpg',
+        'photos/bouquet.jpg'
+      ],
 
-        // Nội dung bức thư tình
-        letter: {
-            text: "Gửi em, cô gái ngọt ngào của anh 💌\n\nChúc mừng ngày Phụ Nữ Việt Nam 20/10 thật hạnh phúc nhé em yêu!\n\nCảm ơn em vì đã xuất hiện và mang đến cho thế giới của anh vô vàn nụ cười, sự dịu dàng và những điều ấm áp nhất.\nMỗi khoảnh khắc được cùng em sẻ chia đều là món quà quý giá mà anh luôn trân trọng từng giây từng phút.\n\nChúc cô gái của anh luôn xinh đẹp, rạng rỡ, bình an và mãi luôn là niềm hạnh phúc ngọt ngào nhất của anh.\n\nAnh yêu em rất nhiều, hôm nay và mãi mãi về sau! ❤️",
-            image: 'photos/2.jpg',
-            caption: 'Khoảnh khắc ngọt ngào của chúng mình 💕'
-        },
+      // Nội dung bức thư tình
+      letter: {
+        text: "Gửi em, cô gái ngọt ngào của anh 💌\n\nChúc mừng ngày Phụ Nữ Việt Nam 20/10 thật hạnh phúc nhé em yêu!\n\nCảm ơn em vì đã xuất hiện và mang đến cho thế giới của anh vô vàn nụ cười, sự dịu dàng và những điều ấm áp nhất.\nMỗi khoảnh khắc được cùng em sẻ chia đều là món quà quý giá mà anh luôn trân trọng từng giây từng phút.\n\nChúc cô gái của anh luôn xinh đẹp, rạng rỡ, bình an và mãi luôn là niềm hạnh phúc ngọt ngào nhất của anh.\n\nAnh yêu em rất nhiều, hôm nay và mãi mãi về sau! ❤️",
+        image: 'photos/2.jpg',
+        caption: 'Khoảnh khắc ngọt ngào của chúng mình 💕'
+      },
 
-        // Nhạc nền (đã tải sẵn offline trong music/bgmusic.mp3)
-        bgMusic:           'music/bgmusic.mp3',
-        bgVolume:          0.65
+      // Nhạc nền (đã tải sẵn offline trong music/bgmusic.mp3)
+      bgMusic: 'music/bgmusic.mp3',
+      bgVolume: 0.65
     };
-    </script>
+  </script>
 
-    <!-- ================================================================
+  <!-- ================================================================
          LOGIC THREE.JS VÀ VŨ TRỤ HẠT TƯƠNG TÁC
          ================================================================ -->
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-        import { createNoise3D, createNoise4D } from 'simplex-noise';
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { createNoise3D, createNoise4D } from 'simplex-noise';
 
-        (async () => {
-            const cfg = window.APP_CONFIG;
+    (async () => {
+      const cfg = window.APP_CONFIG;
 
-            // ── KHỞI TẠO ÂM THANH ──
-            const bgMusic = new Audio(cfg.bgMusic);
-            bgMusic.loop = true;
-            bgMusic.volume = cfg.bgVolume || 0.65;
-            let isMusicPlaying = false;
+      // ── KHỞI TẠO ÂM THANH ──
+      const bgMusic = new Audio(cfg.bgMusic);
+      bgMusic.loop = true;
+      bgMusic.volume = cfg.bgVolume || 0.65;
+      let isMusicPlaying = false;
 
-            const musicBtn = document.getElementById('music-toggle');
-            function updateMusicBtn() {
-                if (isMusicPlaying) {
-                    musicBtn.classList.add('playing');
-                    musicBtn.textContent = '🎵';
-                } else {
-                    musicBtn.classList.remove('playing');
-                    musicBtn.textContent = '🔇';
-                }
-            }
+      const musicBtn = document.getElementById('music-toggle');
+      function updateMusicBtn() {
+        if (isMusicPlaying) {
+          musicBtn.classList.add('playing');
+          musicBtn.textContent = '🎵';
+        } else {
+          musicBtn.classList.remove('playing');
+          musicBtn.textContent = '🔇';
+        }
+      }
 
-            function startBgMusic() {
-                bgMusic.play().then(() => {
-                    isMusicPlaying = true;
-                    updateMusicBtn();
-                }).catch(e => {
-                    console.log('Chờ tương tác của người dùng để phát nhạc:', e);
-                });
-            }
+      function startBgMusic() {
+        bgMusic.play().then(() => {
+          isMusicPlaying = true;
+          updateMusicBtn();
+        }).catch(e => {
+          console.log('Chờ tương tác của người dùng để phát nhạc:', e);
+        });
+      }
 
-            function toggleBgMusic() {
-                if (isMusicPlaying) {
-                    bgMusic.pause();
-                    isMusicPlaying = false;
-                } else {
-                    bgMusic.play().then(() => { isMusicPlaying = true; });
-                }
-                updateMusicBtn();
-            }
-            musicBtn.addEventListener('click', toggleBgMusic);
+      function toggleBgMusic() {
+        if (isMusicPlaying) {
+          bgMusic.pause();
+          isMusicPlaying = false;
+        } else {
+          bgMusic.play().then(() => { isMusicPlaying = true; });
+        }
+        updateMusicBtn();
+      }
+      musicBtn.addEventListener('click', toggleBgMusic);
 
-            // ── CÁC BIẾN CẤU HÌNH THREE.JS ──
-            const isDesktop = window.innerWidth >= 768;
-            const PARAMS = {
-                particleCount: 25000,
-                autoPlayTextCount: 80000,
-                backgroundScatterCount: 5000,
-                shapeSize: 14,
-                textShapeSize: isDesktop ? 22 : 15,
-                morphDuration: 2.0,
-                imageParticleSizeRange: [0.038, 0.052],
-                bloomStrength: 0.85,
-                bloomRadius: 0.5,
-                bloomThreshold: 0.16
-            };
+      // ── CÁC BIẾN CẤU HÌNH THREE.JS ──
+      const isDesktop = window.innerWidth >= 768;
+      const PARAMS = {
+        particleCount: 25000,
+        autoPlayTextCount: 80000,
+        backgroundScatterCount: 5000,
+        shapeSize: 14,
+        textShapeSize: isDesktop ? 22 : 15,
+        morphDuration: 2.0,
+        imageParticleSizeRange: [0.038, 0.052],
+        bloomStrength: 0.85,
+        bloomRadius: 0.5,
+        bloomThreshold: 0.16
+      };
 
-            let scene, camera, renderer, controls, clock;
-            let composer, bloomPass;
-            let noise3D, noise4D;
-            let particlesGeometry, particlesMaterial, particleSystem;
-            let backgroundParticleSystem = null, backgroundParticlesGeometry = null, backgroundSourcePositions = null;
-            let currentPositions, sourcePositions, targetPositions;
-            let particleSizes, particleOpacities, particleEffectStrengths;
-            let isInitialized = false;
+      let scene, camera, renderer, controls, clock;
+      let composer, bloomPass;
+      let noise3D, noise4D;
+      let particlesGeometry, particlesMaterial, particleSystem;
+      let backgroundParticleSystem = null, backgroundParticlesGeometry = null, backgroundSourcePositions = null;
+      let currentPositions, sourcePositions, targetPositions;
+      let particleSizes, particleOpacities, particleEffectStrengths;
+      let isInitialized = false;
 
-            const tempVec = new THREE.Vector3();
-            const sourceVec = new THREE.Vector3();
+      const tempVec = new THREE.Vector3();
+      const sourceVec = new THREE.Vector3();
 
-            // ── TẠO HẠT TỪ CHỮ VIẾT ──
-            function generateFromText(text, count, size) {
-                if (!text || !text.trim()) return null;
-                const w = 840;
-                const maxLineWidth = 720;
-                const fontSize = 135;
-                const lineHeight = 165;
-                const canvasMeasure = document.createElement('canvas');
-                const ctx = canvasMeasure.getContext('2d');
-                ctx.font = `bold ${fontSize}px "Pacifico", cursive`;
+      // ── TẠO HẠT TỪ CHỮ VIẾT ──
+      function generateFromText(text, count, size) {
+        if (!text || !text.trim()) return null;
+        const w = 840;
+        const maxLineWidth = 720;
+        const fontSize = 135;
+        const lineHeight = 165;
+        const canvasMeasure = document.createElement('canvas');
+        const ctx = canvasMeasure.getContext('2d');
+        ctx.font = `bold ${fontSize}px "Pacifico", cursive`;
 
-                const words = text.trim().split(/\s+/);
-                const lines = [];
-                let line = '';
-                for (const word of words) {
-                    const next = line ? line + ' ' + word : word;
-                    if (ctx.measureText(next).width <= maxLineWidth) {
-                        line = next;
-                    } else {
-                        if (line) lines.push(line);
-                        line = word;
-                    }
-                }
-                if (line) lines.push(line);
+        const words = text.trim().split(/\s+/);
+        const lines = [];
+        let line = '';
+        for (const word of words) {
+          const next = line ? line + ' ' + word : word;
+          if (ctx.measureText(next).width <= maxLineWidth) {
+            line = next;
+          } else {
+            if (line) lines.push(line);
+            line = word;
+          }
+        }
+        if (line) lines.push(line);
 
-                const h = Math.max(300, lines.length * lineHeight + 80);
-                const canvas = document.createElement('canvas');
-                canvas.width = w;
-                canvas.height = h;
-                const ctx2 = canvas.getContext('2d');
-                ctx2.fillStyle = '#000';
-                ctx2.fillRect(0, 0, w, h);
-                ctx2.fillStyle = '#fff';
-                ctx2.font = `bold ${fontSize}px "Pacifico", cursive`;
-                ctx2.textAlign = 'center';
-                ctx2.textBaseline = 'middle';
-                const startY = h / 2 - (lines.length - 1) * (lineHeight / 2);
-                lines.forEach((ln, i) => {
-                    ctx2.fillText(ln, w / 2, startY + i * lineHeight);
-                });
+        const h = Math.max(300, lines.length * lineHeight + 80);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx2 = canvas.getContext('2d');
+        ctx2.fillStyle = '#000';
+        ctx2.fillRect(0, 0, w, h);
+        ctx2.fillStyle = '#fff';
+        ctx2.font = `bold ${fontSize}px "Pacifico", cursive`;
+        ctx2.textAlign = 'center';
+        ctx2.textBaseline = 'middle';
+        const startY = h / 2 - (lines.length - 1) * (lineHeight / 2);
+        lines.forEach((ln, i) => {
+          ctx2.fillText(ln, w / 2, startY + i * lineHeight);
+        });
 
-                const data = ctx2.getImageData(0, 0, w, h).data;
-                const list = [];
-                for (let y = 0; y < h; y += 2) {
-                    for (let x = 0; x < w; x += 2) {
-                        const idx = (y * w + x) * 4;
-                        const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-                        if (brightness > 20) list.push({ x, y, brightness, key: y * w + x });
-                    }
-                }
-                if (list.length === 0) return null;
-                list.sort((a, b) => a.key - b.key);
+        const data = ctx2.getImageData(0, 0, w, h).data;
+        const list = [];
+        for (let y = 0; y < h; y += 2) {
+          for (let x = 0; x < w; x += 2) {
+            const idx = (y * w + x) * 4;
+            const brightness = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+            if (brightness > 20) list.push({ x, y, brightness, key: y * w + x });
+          }
+        }
+        if (list.length === 0) return null;
+        list.sort((a, b) => a.key - b.key);
 
-                const scale = size / Math.max(w, h);
-                const cx = w / 2, cy = h / 2;
-                const depthScale = size * 0.05;
-                const points = new Float32Array(count * 3);
-                const colors = new Float32Array(count * 3);
-                const maxRadius = size * 0.6;
-                for (let i = 0; i < count; i++) {
-                    const idx = Math.min(Math.floor((i * list.length) / count), list.length - 1);
-                    const p = list[idx];
-                    const px = (p.x - cx) * scale;
-                    const py = (cy - p.y) * scale;
-                    const pz = (p.brightness / 255) * depthScale;
-                    points[i * 3] = px;
-                    points[i * 3 + 1] = py;
-                    points[i * 3 + 2] = pz;
+        const scale = size / Math.max(w, h);
+        const cx = w / 2, cy = h / 2;
+        const depthScale = size * 0.05;
+        const points = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        const maxRadius = size * 0.6;
+        for (let i = 0; i < count; i++) {
+          const idx = Math.min(Math.floor((i * list.length) / count), list.length - 1);
+          const p = list[idx];
+          const px = (p.x - cx) * scale;
+          const py = (cy - p.y) * scale;
+          const pz = (p.brightness / 255) * depthScale;
+          points[i * 3] = px;
+          points[i * 3 + 1] = py;
+          points[i * 3 + 2] = pz;
 
-                    const dist = Math.sqrt(px * px + py * py + pz * pz);
-                    const hue = THREE.MathUtils.mapLinear(dist, 0, maxRadius, 335, 360);
-                    const c = new THREE.Color().setHSL(hue / 360, 0.85, 0.55);
-                    colors[i * 3] = c.r;
-                    colors[i * 3 + 1] = c.g;
-                    colors[i * 3 + 2] = c.b;
-                }
-                return { positions: points, colors };
-            }
+          const dist = Math.sqrt(px * px + py * py + pz * pz);
+          const hue = THREE.MathUtils.mapLinear(dist, 0, maxRadius, 335, 360);
+          const c = new THREE.Color().setHSL(hue / 360, 0.85, 0.55);
+          colors[i * 3] = c.r;
+          colors[i * 3 + 1] = c.g;
+          colors[i * 3 + 2] = c.b;
+        }
+        return { positions: points, colors };
+      }
 
-            let particleCount = 0;
-            let isMorphing = false;
-            let morphStartTime = 0;
+      let particleCount = 0;
+      let isMorphing = false;
+      let morphStartTime = 0;
 
-            function createSharpParticleTexture() {
-                const size = 128;
-                const canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
-                const context = canvas.getContext('2d');
-                const gradient = context.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-                gradient.addColorStop(0, 'rgba(255,255,255,1)');
-                gradient.addColorStop(0.35, 'rgba(255,255,255,0.95)');
-                gradient.addColorStop(0.7, 'rgba(255,255,255,0.5)');
-                gradient.addColorStop(0.92, 'rgba(255,255,255,0.12)');
-                gradient.addColorStop(1, 'rgba(255,255,255,0)');
-                context.fillStyle = gradient;
-                context.fillRect(0, 0, size, size);
-                return new THREE.CanvasTexture(canvas);
-            }
+      function createSharpParticleTexture() {
+        const size = 128;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const context = canvas.getContext('2d');
+        const gradient = context.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+        gradient.addColorStop(0, 'rgba(255,255,255,1)');
+        gradient.addColorStop(0.35, 'rgba(255,255,255,0.95)');
+        gradient.addColorStop(0.7, 'rgba(255,255,255,0.5)');
+        gradient.addColorStop(0.92, 'rgba(255,255,255,0.12)');
+        gradient.addColorStop(1, 'rgba(255,255,255,0)');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, size, size);
+        return new THREE.CanvasTexture(canvas);
+      }
 
-            function rebuildParticleSystemForImage(result) {
-                const count = result.positions.length / 3;
-                particleCount = count;
-                if (particleSystem) {
-                    scene.remove(particleSystem);
-                    particlesGeometry.dispose();
-                    particlesMaterial.dispose();
-                }
+      function rebuildParticleSystemForImage(result) {
+        const count = result.positions.length / 3;
+        particleCount = count;
+        if (particleSystem) {
+          scene.remove(particleSystem);
+          particlesGeometry.dispose();
+          particlesMaterial.dispose();
+        }
 
-                currentPositions = new Float32Array(result.positions);
-                sourcePositions = new Float32Array(result.positions);
-                targetPositions = [new Float32Array(result.positions)];
+        currentPositions = new Float32Array(result.positions);
+        sourcePositions = new Float32Array(result.positions);
+        targetPositions = [new Float32Array(result.positions)];
 
-                particlesGeometry = new THREE.BufferGeometry();
-                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
+        particlesGeometry = new THREE.BufferGeometry();
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(currentPositions, 3));
 
-                const [minS, maxS] = PARAMS.imageParticleSizeRange;
-                particleSizes = new Float32Array(count);
-                particleOpacities = new Float32Array(count);
-                particleEffectStrengths = new Float32Array(count);
-                for (let i = 0; i < count; i++) {
-                    particleSizes[i] = THREE.MathUtils.randFloat(minS, maxS);
-                    particleOpacities[i] = 1.0;
-                    particleEffectStrengths[i] = 0.0;
-                }
-                particlesGeometry.setAttribute('size', new THREE.BufferAttribute(particleSizes, 1));
-                particlesGeometry.setAttribute('opacity', new THREE.BufferAttribute(particleOpacities, 1));
-                particlesGeometry.setAttribute('aEffectStrength', new THREE.BufferAttribute(particleEffectStrengths, 1));
-                particlesGeometry.setAttribute('color', new THREE.BufferAttribute(result.colors, 3));
+        const [minS, maxS] = PARAMS.imageParticleSizeRange;
+        particleSizes = new Float32Array(count);
+        particleOpacities = new Float32Array(count);
+        particleEffectStrengths = new Float32Array(count);
+        for (let i = 0; i < count; i++) {
+          particleSizes[i] = THREE.MathUtils.randFloat(minS, maxS);
+          particleOpacities[i] = 1.0;
+          particleEffectStrengths[i] = 0.0;
+        }
+        particlesGeometry.setAttribute('size', new THREE.BufferAttribute(particleSizes, 1));
+        particlesGeometry.setAttribute('opacity', new THREE.BufferAttribute(particleOpacities, 1));
+        particlesGeometry.setAttribute('aEffectStrength', new THREE.BufferAttribute(particleEffectStrengths, 1));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(result.colors, 3));
 
-                particlesMaterial = new THREE.ShaderMaterial({
-                    uniforms: { pointTexture: { value: createSharpParticleTexture() } },
-                    vertexShader: `
+        particlesMaterial = new THREE.ShaderMaterial({
+          uniforms: { pointTexture: { value: createSharpParticleTexture() } },
+          vertexShader: `
                         attribute float size; attribute float opacity; attribute float aEffectStrength;
                         varying vec3 vColor; varying float vOpacity; varying float vEffectStrength;
                         void main() {
@@ -1138,7 +1288,7 @@
                             gl_PointSize = size * sizeScale * (650.0 / -mvPosition.z);
                             gl_Position = projectionMatrix * mvPosition;
                         }`,
-                    fragmentShader: `
+          fragmentShader: `
                         uniform sampler2D pointTexture;
                         varying vec3 vColor; varying float vOpacity; varying float vEffectStrength;
                         void main() {
@@ -1146,62 +1296,62 @@
                             if (alpha < 0.05) discard;
                             gl_FragColor = vec4(vColor, alpha * vOpacity);
                         }`,
-                    blending: THREE.NormalBlending,
-                    depthTest: true,
-                    depthWrite: false,
-                    transparent: true,
-                    vertexColors: true
-                });
+          blending: THREE.NormalBlending,
+          depthTest: true,
+          depthWrite: false,
+          transparent: true,
+          vertexColors: true
+        });
 
-                particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
-                scene.add(particleSystem);
-            }
+        particleSystem = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particleSystem);
+      }
 
-            function startMorphToResult(result) {
-                const count = result.positions.length / 3;
-                const positions = particlesGeometry.attributes.position.array;
-                sourcePositions = new Float32Array(positions);
-                targetPositions = [new Float32Array(result.positions)];
-                particlesGeometry.attributes.color.array.set(result.colors);
-                particlesGeometry.attributes.color.needsUpdate = true;
-                isMorphing = true;
-                morphStartTime = clock.getElapsedTime();
-            }
+      function startMorphToResult(result) {
+        const count = result.positions.length / 3;
+        const positions = particlesGeometry.attributes.position.array;
+        sourcePositions = new Float32Array(positions);
+        targetPositions = [new Float32Array(result.positions)];
+        particlesGeometry.attributes.color.array.set(result.colors);
+        particlesGeometry.attributes.color.needsUpdate = true;
+        isMorphing = true;
+        morphStartTime = clock.getElapsedTime();
+      }
 
-            function createBackgroundScatterLayer() {
-                const count = PARAMS.backgroundScatterCount;
-                const positions = new Float32Array(count * 3);
-                const colors = new Float32Array(count * 3);
-                const [minS, maxS] = PARAMS.imageParticleSizeRange;
-                const sizes = new Float32Array(count);
-                const opacities = new Float32Array(count);
-                const effectStrengths = new Float32Array(count);
-                for (let i = 0; i < count; i++) {
-                    const i3 = i * 3;
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos(2 * Math.random() - 1);
-                    const r = 4 + Math.random() * 15;
-                    positions[i3]     = r * Math.sin(phi) * Math.cos(theta);
-                    positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-                    positions[i3 + 2] = r * Math.cos(phi);
-                    const hue = 330 + Math.random() * 30;
-                    const c = new THREE.Color().setHSL(hue / 360, 0.8, 0.5 + Math.random() * 0.2);
-                    colors[i3] = c.r; colors[i3 + 1] = c.g; colors[i3 + 2] = c.b;
-                    sizes[i] = THREE.MathUtils.randFloat(minS * 0.8, maxS * 0.8);
-                    opacities[i] = 0.85;
-                    effectStrengths[i] = 0;
-                }
-                backgroundSourcePositions = new Float32Array(positions);
-                const geo = new THREE.BufferGeometry();
-                geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-                geo.setAttribute('opacity', new THREE.BufferAttribute(opacities, 1));
-                geo.setAttribute('aEffectStrength', new THREE.BufferAttribute(effectStrengths, 1));
+      function createBackgroundScatterLayer() {
+        const count = PARAMS.backgroundScatterCount;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        const [minS, maxS] = PARAMS.imageParticleSizeRange;
+        const sizes = new Float32Array(count);
+        const opacities = new Float32Array(count);
+        const effectStrengths = new Float32Array(count);
+        for (let i = 0; i < count; i++) {
+          const i3 = i * 3;
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.acos(2 * Math.random() - 1);
+          const r = 4 + Math.random() * 15;
+          positions[i3] = r * Math.sin(phi) * Math.cos(theta);
+          positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+          positions[i3 + 2] = r * Math.cos(phi);
+          const hue = 330 + Math.random() * 30;
+          const c = new THREE.Color().setHSL(hue / 360, 0.8, 0.5 + Math.random() * 0.2);
+          colors[i3] = c.r; colors[i3 + 1] = c.g; colors[i3 + 2] = c.b;
+          sizes[i] = THREE.MathUtils.randFloat(minS * 0.8, maxS * 0.8);
+          opacities[i] = 0.85;
+          effectStrengths[i] = 0;
+        }
+        backgroundSourcePositions = new Float32Array(positions);
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        geo.setAttribute('opacity', new THREE.BufferAttribute(opacities, 1));
+        geo.setAttribute('aEffectStrength', new THREE.BufferAttribute(effectStrengths, 1));
 
-                const mat = new THREE.ShaderMaterial({
-                    uniforms: { pointTexture: { value: createSharpParticleTexture() } },
-                    vertexShader: `
+        const mat = new THREE.ShaderMaterial({
+          uniforms: { pointTexture: { value: createSharpParticleTexture() } },
+          vertexShader: `
                         attribute float size; attribute float opacity; attribute float aEffectStrength;
                         varying vec3 vColor; varying float vOpacity; varying float vEffectStrength;
                         void main() {
@@ -1210,7 +1360,7 @@
                             gl_PointSize = size * (650.0 / -mvPosition.z);
                             gl_Position = projectionMatrix * mvPosition;
                         }`,
-                    fragmentShader: `
+          fragmentShader: `
                         uniform sampler2D pointTexture;
                         varying vec3 vColor; varying float vOpacity;
                         void main() {
@@ -1218,1010 +1368,1026 @@
                             if (alpha < 0.05) discard;
                             gl_FragColor = vec4(vColor, alpha * vOpacity);
                         }`,
-                    blending: THREE.NormalBlending, depthTest: true, depthWrite: false, transparent: true, vertexColors: true
-                });
-                backgroundParticlesGeometry = geo;
-                backgroundParticleSystem = new THREE.Points(geo, mat);
-                backgroundParticleSystem.renderOrder = -1;
-                scene.add(backgroundParticleSystem);
+          blending: THREE.NormalBlending, depthTest: true, depthWrite: false, transparent: true, vertexColors: true
+        });
+        backgroundParticlesGeometry = geo;
+        backgroundParticleSystem = new THREE.Points(geo, mat);
+        backgroundParticleSystem.renderOrder = -1;
+        scene.add(backgroundParticleSystem);
+      }
+
+      function initScatterParticles() {
+        const count = PARAMS.autoPlayTextCount;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) {
+          const i3 = i * 3;
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.acos(2 * Math.random() - 1);
+          const r = 3 + Math.random() * 14;
+          positions[i3] = r * Math.sin(phi) * Math.cos(theta);
+          positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+          positions[i3 + 2] = r * Math.cos(phi);
+          const hue = 330 + Math.random() * 30;
+          const c = new THREE.Color().setHSL(hue / 360, 0.8, 0.5 + Math.random() * 0.2);
+          colors[i3] = c.r; colors[i3 + 1] = c.g; colors[i3 + 2] = c.b;
+        }
+        createBackgroundScatterLayer();
+        bloomPass.strength = 0.55;
+        bloomPass.threshold = 0.1;
+        rebuildParticleSystemForImage({ positions, colors });
+      }
+
+      // ── QUẢ CẦU ẢNH 3D (SPHERE PHASE) ──
+      const SP_RADIUS = 6, SP_ROWS = 6, SP_POLAR_MARGIN = 0.15;
+      const SP_INTRO_RADIUS = 16, SP_INTRO_DURATION_MS = 2800, SP_INTRO_STAGGER_MS = 900;
+      const SP_FLYOUT_BOUND = 10, SP_RAIN_SPEED = 0.025, SP_RAIN_COUNT = 450;
+      const isMobileSP = window.innerWidth < 768;
+
+      let spPhase = false, spGroup = null, spMeshes = [], spTextures = [];
+      let spIntroStartTime = 0, spIntroComplete = false, spIntroCompleteTime = 0;
+      let spClickSphere = null, spRaycaster = null, spMouse = null;
+      let spHasZoomedIn = false, spNeedZoomIn = false, spZoomInTime = 0;
+      const spZoomInTarget = new THREE.Vector3();
+      let spIsExploded = false, spExplosionProgress = 0, spExplosionStartTime = 0;
+      let spFadeProgress = 0, spFloatingImages = [], spFloatingGroup = null;
+      let spDriftTiltAngle = 0, spDriftTiltDir = 1;
+      let spIsFinalFlyUp = false;
+      let spTime = 0, spParticlesMesh = null, spRainMesh = null, spRainPositions = null;
+      let spIsPointerDown = false, spWasDrag = false, spMouseDownX = 0, spMouseDownY = 0;
+
+      let cupidLetterState = 'hidden';
+      let cupidFlyStartTime = 0;
+      const CUPID_FLY_DURATION_MS = 2000;
+
+      function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+      function spCreatePatch(r, t0, t1, p0, p1, ws, hs) {
+        const geo = new THREE.BufferGeometry();
+        const verts = [], uvs = [], idx = [];
+        for (let y = 0; y <= hs; y++) {
+          const v = y / hs, phi = p0 + v * (p1 - p0);
+          for (let x = 0; x <= ws; x++) {
+            const u = x / ws, theta = t0 + u * (t1 - t0);
+            verts.push(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
+            uvs.push(u, 1 - v);
+          }
+        }
+        for (let y = 0; y < hs; y++) for (let x = 0; x < ws; x++) {
+          const a = y * (ws + 1) + x, b = a + 1, c = a + (ws + 1), d = c + 1;
+          idx.push(a, c, b, b, c, d);
+        }
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+        geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        geo.setIndex(idx);
+        geo.computeVertexNormals();
+        return geo;
+      }
+
+      function spBuildSphere() {
+        let imgIdx = 0;
+        const phiStart = Math.PI * SP_POLAR_MARGIN;
+        const phiEnd = Math.PI * (1 - SP_POLAR_MARGIN);
+        const phiRange = phiEnd - phiStart;
+        const len = spTextures.length;
+
+        for (let row = 0; row < SP_ROWS; row++) {
+          const p1 = phiStart + (row / SP_ROWS) * phiRange;
+          const p2 = phiStart + ((row + 1) / SP_ROWS) * phiRange;
+          const pMid = (p1 + p2) / 2;
+          const circ = 2 * Math.PI * SP_RADIUS * Math.sin(pMid);
+          const imgH = phiRange * SP_RADIUS / SP_ROWS;
+          const n = Math.max(3, Math.round(circ / imgH));
+          const tStep = (2 * Math.PI) / n;
+          for (let col = 0; col < n; col++) {
+            const t = col * tStep;
+            const tex = spTextures[imgIdx % len];
+            imgIdx++;
+            const geo = spCreatePatch(SP_RADIUS, t, t + tStep, p1, p2, 10, 10);
+            const mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true, opacity: 1 });
+            const mesh = new THREE.Mesh(geo, mat);
+
+            // Vị trí bay từ xa vào
+            const thetaRand = Math.random() * Math.PI * 2;
+            const phiRand = Math.acos(2 * Math.random() - 1);
+            const startPos = new THREE.Vector3(
+              SP_INTRO_RADIUS * Math.sin(phiRand) * Math.cos(thetaRand),
+              SP_INTRO_RADIUS * Math.cos(phiRand),
+              SP_INTRO_RADIUS * Math.sin(phiRand) * Math.sin(thetaRand)
+            );
+            mesh.userData.introStartPos = startPos;
+            mesh.userData.introDelay = Math.random() * SP_INTRO_STAGGER_MS;
+            mesh.position.copy(startPos);
+            spGroup.add(mesh);
+            spMeshes.push(mesh);
+          }
+        }
+        spIntroStartTime = Date.now();
+      }
+
+      function spGlowTexture(size) {
+        const c = document.createElement('canvas'); c.width = c.height = size;
+        const ctx = c.getContext('2d'), cx = size / 2;
+        const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, cx);
+        g.addColorStop(0, 'rgba(255,105,180,1)');
+        g.addColorStop(0.3, 'rgba(255,182,193,0.8)');
+        g.addColorStop(0.6, 'rgba(255,105,180,0.3)');
+        g.addColorStop(1, 'rgba(255,105,180,0)');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, size, size);
+        return new THREE.CanvasTexture(c);
+      }
+
+      function spRoundedRectGeo(w, h, radius) {
+        const shape = new THREE.Shape();
+        const x = -w / 2, y = -h / 2;
+        shape.moveTo(x + radius, y); shape.lineTo(x + w - radius, y);
+        shape.quadraticCurveTo(x + w, y, x + w, y + radius);
+        shape.lineTo(x + w, y + h - radius);
+        shape.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        shape.lineTo(x + radius, y + h);
+        shape.quadraticCurveTo(x, y + h, x, y + h - radius);
+        shape.lineTo(x, y + radius); shape.quadraticCurveTo(x, y, x + radius, y);
+        const geo = new THREE.ShapeGeometry(shape);
+        const pos = geo.attributes.position, uvsArr = [];
+        for (let i = 0; i < pos.count; i++) uvsArr.push((pos.getX(i) + w / 2) / w, (pos.getY(i) + h / 2) / h);
+        geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvsArr, 2));
+        return geo;
+      }
+
+      function spCreateFloatingImages() {
+        spFloatingGroup = new THREE.Group();
+        scene.add(spFloatingGroup);
+        const total = 32, grid = 16, used = [];
+        const glowTex = spGlowTexture(128);
+
+        function findPos(size) {
+          const d = size * 1.5 + 1;
+          for (let i = 0; i < 60; i++) {
+            const x = (Math.random() - .5) * grid, y = (Math.random() - .5) * grid, z = (Math.random() - .5) * grid;
+            if (used.every(p => Math.hypot(x - p.x, y - p.y, z - p.z) >= d)) {
+              used.push({ x, y, z });
+              return { x, y, z };
             }
+          }
+          return { x: (Math.random() - .5) * grid, y: (Math.random() - .5) * grid, z: (Math.random() - .5) * grid };
+        }
 
-            function initScatterParticles() {
-                const count = PARAMS.autoPlayTextCount;
-                const positions = new Float32Array(count * 3);
-                const colors    = new Float32Array(count * 3);
-                for (let i = 0; i < count; i++) {
-                    const i3 = i * 3;
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi   = Math.acos(2 * Math.random() - 1);
-                    const r     = 3 + Math.random() * 14;
-                    positions[i3]     = r * Math.sin(phi) * Math.cos(theta);
-                    positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-                    positions[i3 + 2] = r * Math.cos(phi);
-                    const hue = 330 + Math.random() * 30;
-                    const c = new THREE.Color().setHSL(hue / 360, 0.8, 0.5 + Math.random() * 0.2);
-                    colors[i3] = c.r; colors[i3 + 1] = c.g; colors[i3 + 2] = c.b;
-                }
-                createBackgroundScatterLayer();
-                bloomPass.strength = 0.55;
-                bloomPass.threshold = 0.1;
-                rebuildParticleSystemForImage({ positions, colors });
+        for (let i = 0; i < total; i++) {
+          const tex = spTextures[i % spTextures.length];
+          const sv = 0.6 + Math.random() * 1.6, w = 1.5 * sv, h = 1.1 * sv, cr = 0.15 * sv;
+          const ig = new THREE.Group();
+
+          const gMat = new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false });
+          ig.add(new THREE.Mesh(spRoundedRectGeo(w * 1.4, h * 1.4, cr * 1.4), gMat));
+
+          const iMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true, opacity: 0 });
+          ig.add(new THREE.Mesh(spRoundedRectGeo(w, h, cr), iMat));
+
+          const tPhi = Math.acos(2 * Math.random() - 1), tTheta = Math.random() * Math.PI * 2;
+          ig.position.set(SP_RADIUS * .5 * Math.sin(tPhi) * Math.cos(tTheta), SP_RADIUS * .5 * Math.cos(tPhi), SP_RADIUS * .5 * Math.sin(tPhi) * Math.sin(tTheta));
+          const tp = findPos(Math.max(w, h));
+          ig.userData = {
+            startPos: ig.position.clone(),
+            targetPos: new THREE.Vector3(tp.x, tp.y, tp.z),
+            floatSpeedY: 0.3 + Math.random() * 0.5,
+            floatAmplY: 0.1 + Math.random() * 0.2,
+            floatPhase: Math.random() * Math.PI * 2,
+            delay: Math.random() * 0.5,
+            basePos: new THREE.Vector3(tp.x, tp.y, tp.z),
+            iMat, gMat,
+            driftSpeed: 0.002 + Math.random() * 0.003,
+            baseZ: tp.z
+          };
+          spFloatingGroup.add(ig);
+          spFloatingImages.push(ig);
+        }
+      }
+
+      function spTriggerExplosion() {
+        if (spIsExploded) return;
+        spIsExploded = true;
+        spExplosionProgress = 0;
+        spFadeProgress = 0;
+        spMeshes.forEach(m => { if (m.material) m.material.transparent = true; });
+        spExplosionStartTime = Date.now();
+        controls.autoRotate = false;
+        controls.enableRotate = true;
+        controls.maxDistance = 18;
+
+        spCreateFloatingImages();
+        document.getElementById('btn-flying-corner').classList.add('visible');
+
+        const flash = document.createElement('div');
+        flash.style.cssText = 'position:fixed;inset:0;background:radial-gradient(circle,rgba(255,105,180,0.85) 0%,transparent 70%);pointer-events:none;z-index:1000;transition:opacity 0.9s;';
+        document.body.appendChild(flash);
+        setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 900); }, 50);
+      }
+
+      function spShowHint(text) {
+        const el = document.getElementById('sphere-click-hint');
+        if (!el) return;
+        el.innerText = text;
+        el.classList.add('visible');
+        setTimeout(() => el.classList.remove('visible'), 3500);
+      }
+
+      function spHandleTap(cx, cy) {
+        if (spIsExploded || !spIntroComplete) return;
+        spMouse.x = (cx / window.innerWidth) * 2 - 1;
+        spMouse.y = -(cy / window.innerHeight) * 2 + 1;
+        spRaycaster.setFromCamera(spMouse, camera);
+
+        const hits = spRaycaster.intersectObject(spClickSphere);
+        if (hits.length > 0) {
+          document.getElementById('sphere-click-hint').classList.remove('visible');
+          if (!spHasZoomedIn) {
+            spHasZoomedIn = true;
+            spZoomInTime = Date.now();
+            spNeedZoomIn = true;
+            const dir = camera.position.clone().sub(controls.target).normalize();
+            spZoomInTarget.copy(controls.target).add(dir.multiplyScalar(controls.minDistance + 1));
+            spShowHint('Chạm lần nữa nào ✨');
+          } else {
+            spTriggerExplosion();
+          }
+        }
+      }
+
+      // ── BỨC THƯ TÌNH CUPID ──
+      function startCupidLetterSequence() {
+        const overlay = document.getElementById('cupid-letter-overlay');
+        const cupidImg = document.getElementById('cupid-flying-img');
+        const letterFrame = document.getElementById('cupid-letter-frame');
+        if (!overlay || !cupidImg || !letterFrame) return;
+
+        cupidLetterState = 'flying';
+        cupidFlyStartTime = Date.now();
+        overlay.classList.add('visible');
+        cupidImg.style.display = 'block';
+
+        const startLeft = window.innerWidth * 0.15;
+        const startTop = window.innerHeight * 0.85;
+        cupidImg.style.left = startLeft + 'px';
+        cupidImg.style.top = startTop + 'px';
+        cupidImg.style.opacity = '1';
+        cupidImg.style.transition = 'none';
+
+        letterFrame.classList.remove('visible');
+        document.getElementById('letter-envelope-img')?.classList.remove('visible');
+      }
+
+      function updateCupidFly() {
+        if (cupidLetterState !== 'flying') return;
+        const elapsed = Date.now() - cupidFlyStartTime;
+        const progress = Math.min(1, elapsed / CUPID_FLY_DURATION_MS);
+        const eased = 1 - Math.pow(1 - progress, 1.3);
+        const cupidImg = document.getElementById('cupid-flying-img');
+        if (!cupidImg) return;
+
+        const startLeft = window.innerWidth * 0.15;
+        const startTop = window.innerHeight * 0.85;
+        const endLeft = window.innerWidth * 0.5;
+        const endTop = window.innerHeight * 0.5;
+
+        cupidImg.style.left = (startLeft + (endLeft - startLeft) * eased) + 'px';
+        cupidImg.style.top = (startTop + (endTop - startTop) * eased) + 'px';
+
+        if (progress >= 1) {
+          cupidLetterState = 'letterImage';
+          cupidImg.style.transition = 'opacity 0.4s ease-out';
+          cupidImg.style.opacity = '0';
+          setTimeout(() => {
+            cupidImg.style.display = 'none';
+            document.getElementById('letter-envelope-img')?.classList.add('visible');
+          }, 400);
+        }
+      }
+
+      function startLetterTypingEffect(letterContent, cursor) {
+        const text = cfg.letter?.text || "Happy Women's Day 20/10!\n\nChúc em luôn xinh đẹp, hạnh phúc và bình an! ❤️";
+        const TYPING_SPEED_MS = 40;
+        const chars = Array.from(text);
+        let currentIndex = 0;
+
+        function typeNextChar() {
+          if (currentIndex < chars.length) {
+            const char = chars[currentIndex];
+            letterContent.insertBefore(document.createTextNode(char), cursor);
+            currentIndex++;
+            if (char === '\n') {
+              cursor.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
+            const delay = char === '\n' ? 180 : TYPING_SPEED_MS;
+            setTimeout(typeNextChar, delay);
+          } else {
+            setTimeout(() => {
+              if (cursor) cursor.style.display = 'none';
+              const wrap = document.getElementById('letterImageWrap');
+              const imgEl = document.getElementById('letterInlineImage');
+              const captionEl = document.getElementById('letterImageCaption');
+              if (cfg.letter?.image && imgEl) {
+                imgEl.src = cfg.letter.image;
+                if (captionEl) captionEl.textContent = cfg.letter.caption || 'Yêu em ❤️';
+                wrap.style.display = 'block';
+                requestAnimationFrame(() => { wrap.classList.add('visible'); });
+              }
+            }, 300);
+          }
+        }
+        setTimeout(typeNextChar, 250);
+      }
 
-            // ── QUẢ CẦU ẢNH 3D (SPHERE PHASE) ──
-            const SP_RADIUS = 6, SP_ROWS = 6, SP_POLAR_MARGIN = 0.15;
-            const SP_INTRO_RADIUS = 16, SP_INTRO_DURATION_MS = 2800, SP_INTRO_STAGGER_MS = 900;
-            const SP_FLYOUT_BOUND = 10, SP_RAIN_SPEED = 0.025, SP_RAIN_COUNT = 450;
-            const isMobileSP = window.innerWidth < 768;
+      function handleLetterEnvelopeClick() {
+        if (cupidLetterState !== 'letterImage') return;
+        cupidLetterState = 'showingLetter';
+        startBgMusic();
 
-            let spPhase = false, spGroup = null, spMeshes = [], spTextures = [];
-            let spIntroStartTime = 0, spIntroComplete = false, spIntroCompleteTime = 0;
-            let spClickSphere = null, spRaycaster = null, spMouse = null;
-            let spHasZoomedIn = false, spNeedZoomIn = false, spZoomInTime = 0;
-            const spZoomInTarget = new THREE.Vector3();
-            let spIsExploded = false, spExplosionProgress = 0, spExplosionStartTime = 0;
-            let spFadeProgress = 0, spFloatingImages = [], spFloatingGroup = null;
-            let spDriftTiltAngle = 0, spDriftTiltDir = 1;
-            let spIsFinalFlyUp = false;
-            let spTime = 0, spParticlesMesh = null, spRainMesh = null, spRainPositions = null;
-            let spIsPointerDown = false, spWasDrag = false, spMouseDownX = 0, spMouseDownY = 0;
+        document.getElementById('letter-envelope-img')?.classList.remove('visible');
+        const letterFrame = document.getElementById('cupid-letter-frame');
+        const letterContent = document.getElementById('letterContent');
+        const letterImageWrap = document.getElementById('letterImageWrap');
 
-            let cupidLetterState = 'hidden';
-            let cupidFlyStartTime = 0;
-            const CUPID_FLY_DURATION_MS = 2000;
+        if (letterImageWrap) {
+          letterImageWrap.style.display = 'none';
+          letterImageWrap.classList.remove('visible');
+        }
 
-            function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        if (letterFrame && letterContent) {
+          letterContent.textContent = '';
+          const cursor = document.createElement('span');
+          cursor.className = 'letter-cursor';
+          letterContent.appendChild(cursor);
+          letterFrame.classList.add('visible');
+          startLetterTypingEffect(letterContent, cursor);
+        }
+      }
 
-            function spCreatePatch(r, t0, t1, p0, p1, ws, hs) {
-                const geo = new THREE.BufferGeometry();
-                const verts = [], uvs = [], idx = [];
-                for (let y = 0; y <= hs; y++) {
-                    const v = y / hs, phi = p0 + v * (p1 - p0);
-                    for (let x = 0; x <= ws; x++) {
-                        const u = x / ws, theta = t0 + u * (t1 - t0);
-                        verts.push(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
-                        uvs.push(u, 1 - v);
-                    }
-                }
-                for (let y = 0; y < hs; y++) for (let x = 0; x < ws; x++) {
-                    const a = y * (ws + 1) + x, b = a + 1, c = a + (ws + 1), d = c + 1;
-                    idx.push(a, c, b, b, c, d);
-                }
-                geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-                geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-                geo.setIndex(idx);
-                geo.computeVertexNormals();
-                return geo;
+      document.getElementById('letter-envelope-img')?.addEventListener('click', handleLetterEnvelopeClick);
+      document.getElementById('letterCloseBtn')?.addEventListener('click', () => {
+        document.getElementById('cupid-letter-overlay')?.classList.remove('visible');
+        cupidLetterState = 'hidden';
+      });
+
+      // ── KHỞI CHẠY GIAI ĐOẠN QUẢ CẦU (START SPHERE PHASE) ──
+      let spCameraTransitioning = false;
+      const spTargetCameraPos = new THREE.Vector3();
+
+      function startSpherePhase() {
+        // Chuyển cảnh mượt mà tức thì: KHÔNG màn đen, KHÔNG gián đoạn
+        camera.fov = 75;
+        camera.updateProjectionMatrix();
+        if (isMobileSP) {
+          spTargetCameraPos.set(0, 0, 16);
+        } else {
+          spTargetCameraPos.set(0, 0, 11);
+        }
+        spCameraTransitioning = true;
+        controls.target.set(0, 0, 0);
+        controls.enableRotate = true;
+        controls.enableZoom = true;
+        controls.enablePan = false;
+        controls.minDistance = isMobileSP ? 5.5 : 6;
+        controls.maxDistance = isMobileSP ? 26 : 20;
+        controls.minPolarAngle = Math.PI * 0.2;
+        controls.maxPolarAngle = Math.PI * 0.8;
+        controls.update();
+
+        // Dọn dẹp hệ thống hạt cũ sau 2.2s khi các hạt nổ đã bay rộng ra ngoài tầm mắt
+        setTimeout(() => {
+          if (particleSystem) {
+            scene.remove(particleSystem);
+            if (particlesGeometry) particlesGeometry.dispose();
+            if (particlesMaterial) particlesMaterial.dispose();
+            particleSystem = null;
+            particleCount = 0;
+          }
+          if (backgroundParticleSystem) {
+            scene.remove(backgroundParticleSystem);
+            if (backgroundParticlesGeometry) backgroundParticlesGeometry.dispose();
+            backgroundParticleSystem = null;
+          }
+        }, 2200);
+
+        scene.fog = null;
+        scene.background = new THREE.Color(0x000000);
+        bloomPass.strength = 0;
+        bloomPass.threshold = 1;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        const startWrap = document.getElementById('start-wrap');
+        if (startWrap) startWrap.style.display = 'none';
+
+        spGroup = new THREE.Group();
+        scene.add(spGroup);
+
+        spClickSphere = new THREE.Mesh(
+          new THREE.SphereGeometry(SP_RADIUS * 1.15, 32, 32),
+          new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+        );
+        scene.add(spClickSphere);
+        spRaycaster = new THREE.Raycaster();
+        spMouse = new THREE.Vector2();
+
+        // Hào quang hạt quanh quả cầu
+        const sCnt = 500, sPos = new Float32Array(sCnt * 3), sCol = new Float32Array(sCnt * 3);
+        for (let i = 0; i < sCnt; i++) {
+          const t2 = Math.random() * Math.PI * 2, p2 = Math.acos(2 * Math.random() - 1);
+          const r2 = SP_RADIUS * 1.25 + Math.random() * 3.5;
+          sPos[i * 3] = r2 * Math.sin(p2) * Math.cos(t2);
+          sPos[i * 3 + 1] = r2 * Math.cos(p2);
+          sPos[i * 3 + 2] = r2 * Math.sin(p2) * Math.sin(t2);
+          sCol[i * 3] = 1; sCol[i * 3 + 1] = 0.5 + Math.random() * 0.3; sCol[i * 3 + 2] = 0.7 + Math.random() * 0.3;
+        }
+        const sGeo = new THREE.BufferGeometry();
+        sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+        sGeo.setAttribute('color', new THREE.BufferAttribute(sCol, 3));
+        spParticlesMesh = new THREE.Points(sGeo, new THREE.PointsMaterial({ size: 0.045, vertexColors: true, transparent: true, opacity: 0.85 }));
+        scene.add(spParticlesMesh);
+
+        // Mưa sao hạt bay ngược
+        const rPos = new Float32Array(SP_RAIN_COUNT * 3), rCol = new Float32Array(SP_RAIN_COUNT * 3);
+        for (let i = 0; i < SP_RAIN_COUNT; i++) {
+          rPos[i * 3] = (Math.random() - .5) * 2 * SP_FLYOUT_BOUND;
+          rPos[i * 3 + 1] = -SP_FLYOUT_BOUND + Math.random() * 2 * SP_FLYOUT_BOUND;
+          rPos[i * 3 + 2] = (Math.random() - .5) * 2 * SP_FLYOUT_BOUND;
+          rCol[i * 3] = 1; rCol[i * 3 + 1] = 0.5 + Math.random() * 0.3; rCol[i * 3 + 2] = 0.8;
+        }
+        spRainPositions = rPos;
+        const rGeo = new THREE.BufferGeometry();
+        rGeo.setAttribute('position', new THREE.BufferAttribute(rPos, 3));
+        rGeo.setAttribute('color', new THREE.BufferAttribute(rCol, 3));
+        spRainMesh = new THREE.Points(rGeo, new THREE.PointsMaterial({ size: 0.04, vertexColors: true, transparent: true, opacity: 0.75 }));
+        scene.add(spRainMesh);
+
+        // Particles nền CSS
+        const bg = document.getElementById('sphere-particles-bg');
+        if (bg) {
+          bg.innerHTML = '';
+          for (let i = 0; i < 28; i++) {
+            const d = document.createElement('div');
+            d.className = 'sp-particle';
+            d.style.left = Math.random() * 100 + '%';
+            d.style.animationDelay = Math.random() * 14 + 's';
+            d.style.animationDuration = (10 + Math.random() * 10) + 's';
+            bg.appendChild(d);
+          }
+          bg.style.opacity = '1';
+        }
+
+        // Dựng quả cầu 3D với textures đã tải sẵn
+        function doBuildSphere() {
+          if (!spTextures || !spTextures.length) {
+            const c = document.createElement('canvas'); c.width = c.height = 256;
+            const ctx = c.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 0, 256, 256);
+            grad.addColorStop(0, '#ff758c'); grad.addColorStop(1, '#ff7eb3');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 256);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 36px "Pacifico", cursive';
+            ctx.textAlign = 'center'; ctx.fillText('20/10 💕', 128, 140);
+            const fallbackTex = new THREE.CanvasTexture(c);
+            fallbackTex.colorSpace = THREE.SRGBColorSpace;
+            spTextures = [fallbackTex];
+          } else {
+            spTextures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
+          }
+          spBuildSphere();
+          spPhase = true;
+
+          setTimeout(() => { spShowHint('Chạm vào quả cầu nhé ✨'); }, 1500);
+        }
+
+        // Dựng quả cầu ngay lập tức, hoàn toàn không trễ
+        doBuildSphere();
+
+        // Bắt sự kiện tương tác
+        const canvasEl = renderer.domElement;
+        function spDown(e) {
+          const c = e.touches?.[0] || e;
+          spMouseDownX = c.clientX; spMouseDownY = c.clientY;
+          spIsPointerDown = true; spWasDrag = false;
+        }
+        function spMove(e) {
+          const c = e.touches?.[0] || e;
+          if (spIsPointerDown && Math.hypot(c.clientX - spMouseDownX, c.clientY - spMouseDownY) > 6) {
+            spWasDrag = true;
+          }
+        }
+        function spUp() { spIsPointerDown = false; }
+
+        canvasEl.addEventListener('mousedown', spDown);
+        canvasEl.addEventListener('mouseup', spUp);
+        canvasEl.addEventListener('mousemove', spMove);
+        canvasEl.addEventListener('click', e => { if (!spWasDrag) spHandleTap(e.clientX, e.clientY); });
+        canvasEl.addEventListener('touchstart', spDown, { passive: true });
+        canvasEl.addEventListener('touchmove', spMove, { passive: true });
+        canvasEl.addEventListener('touchend', e => {
+          spUp();
+          if (!spWasDrag) {
+            const c = e.changedTouches[0];
+            spHandleTap(c.clientX, c.clientY);
+          }
+        });
+
+        document.getElementById('btn-flying-corner')?.addEventListener('click', () => {
+          startCupidLetterSequence();
+        });
+      }
+
+      // ── CẬP NHẬT MỖI FRAME CỦA QUẢ CẦU ──
+      function updateSpherePhase() {
+        spTime += 0.01;
+
+        if (spRainMesh && spRainPositions) {
+          const n = spRainPositions.length / 3;
+          for (let j = 0; j < n; j++) {
+            spRainPositions[j * 3 + 1] += SP_RAIN_SPEED;
+            if (spRainPositions[j * 3 + 1] > 6) {
+              spRainPositions[j * 3 + 1] = -SP_FLYOUT_BOUND;
+              spRainPositions[j * 3] = (Math.random() - .5) * 2 * SP_FLYOUT_BOUND;
+              spRainPositions[j * 3 + 2] = (Math.random() - .5) * 2 * SP_FLYOUT_BOUND;
             }
+          }
+          spRainMesh.geometry.attributes.position.needsUpdate = true;
+        }
 
-            function spBuildSphere() {
-                let imgIdx = 0;
-                const phiStart = Math.PI * SP_POLAR_MARGIN;
-                const phiEnd   = Math.PI * (1 - SP_POLAR_MARGIN);
-                const phiRange = phiEnd - phiStart;
-                const len = spTextures.length;
-
-                for (let row = 0; row < SP_ROWS; row++) {
-                    const p1 = phiStart + (row / SP_ROWS) * phiRange;
-                    const p2 = phiStart + ((row + 1) / SP_ROWS) * phiRange;
-                    const pMid = (p1 + p2) / 2;
-                    const circ = 2 * Math.PI * SP_RADIUS * Math.sin(pMid);
-                    const imgH = phiRange * SP_RADIUS / SP_ROWS;
-                    const n = Math.max(3, Math.round(circ / imgH));
-                    const tStep = (2 * Math.PI) / n;
-                    for (let col = 0; col < n; col++) {
-                        const t = col * tStep;
-                        const tex = spTextures[imgIdx % len];
-                        imgIdx++;
-                        const geo = spCreatePatch(SP_RADIUS, t, t + tStep, p1, p2, 10, 10);
-                        const mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true, opacity: 1 });
-                        const mesh = new THREE.Mesh(geo, mat);
-
-                        // Vị trí bay từ xa vào
-                        const thetaRand = Math.random() * Math.PI * 2;
-                        const phiRand = Math.acos(2 * Math.random() - 1);
-                        const startPos = new THREE.Vector3(
-                            SP_INTRO_RADIUS * Math.sin(phiRand) * Math.cos(thetaRand),
-                            SP_INTRO_RADIUS * Math.cos(phiRand),
-                            SP_INTRO_RADIUS * Math.sin(phiRand) * Math.sin(thetaRand)
-                        );
-                        mesh.userData.introStartPos = startPos;
-                        mesh.userData.introDelay = Math.random() * SP_INTRO_STAGGER_MS;
-                        mesh.position.copy(startPos);
-                        spGroup.add(mesh);
-                        spMeshes.push(mesh);
-                    }
-                }
-                spIntroStartTime = Date.now();
+        if (spIsExploded) {
+          spExplosionProgress = Math.min(1, spExplosionProgress + 0.018);
+          spFadeProgress = Math.min(1, spFadeProgress + 0.04);
+          spGroup.children.forEach(child => {
+            if (child.material) {
+              child.material.opacity = Math.max(0, 1 - spFadeProgress);
+              if (child.material.opacity <= 0) child.visible = false;
             }
+          });
+          spClickSphere.visible = false;
 
-            function spGlowTexture(size) {
-                const c = document.createElement('canvas'); c.width = c.height = size;
-                const ctx = c.getContext('2d'), cx = size / 2;
-                const g = ctx.createRadialGradient(cx, cx, 0, cx, cx, cx);
-                g.addColorStop(0, 'rgba(255,105,180,1)');
-                g.addColorStop(0.3, 'rgba(255,182,193,0.8)');
-                g.addColorStop(0.6, 'rgba(255,105,180,0.3)');
-                g.addColorStop(1, 'rgba(255,105,180,0)');
-                ctx.fillStyle = g; ctx.fillRect(0, 0, size, size);
-                return new THREE.CanvasTexture(c);
+          if (spFloatingGroup) {
+            spDriftTiltAngle += spDriftTiltDir * 0.0003;
+            if (spDriftTiltAngle >= 0.25) { spDriftTiltAngle = 0.25; spDriftTiltDir = -1; }
+            else if (spDriftTiltAngle <= -0.25) { spDriftTiltAngle = -0.25; spDriftTiltDir = 1; }
+            spFloatingGroup.rotation.y = spDriftTiltAngle;
+          }
+
+          const maxY = 10, minY = -10;
+          spFloatingImages.forEach((img, idx) => {
+            const d = img.userData;
+            const dp = Math.max(0, (spExplosionProgress - d.delay) / (1 - d.delay));
+            if (dp > 0) {
+              const t = Math.min(1, dp), eased = 1 - Math.pow(1 - t, 2);
+              const fY = Math.sin(spTime * 2 * d.floatSpeedY + d.floatPhase) * d.floatAmplY;
+              d.basePos.y += d.driftSpeed * 12;
+
+              if (eased < 1) {
+                img.position.x = d.startPos.x + (d.targetPos.x - d.startPos.x) * eased;
+                img.position.z = d.startPos.z + (d.targetPos.z - d.startPos.z) * eased;
+                img.position.y = d.startPos.y + (d.targetPos.y - d.startPos.y) * eased + (d.basePos.y - d.targetPos.y) + fY;
+              } else {
+                img.position.x = d.basePos.x;
+                img.position.y = d.basePos.y + fY;
+                img.position.z = d.baseZ;
+              }
+
+              if (d.basePos.y > maxY) {
+                d.basePos.y = minY;
+                d.basePos.x = (Math.random() - .5) * 16;
+                d.baseZ = (Math.random() - .5) * 16;
+              }
+
+              const op = Math.min(1, dp * 2);
+              d.iMat.opacity = op;
+              if (d.gMat) d.gMat.opacity = op * (0.65 + Math.sin(spTime * 3 + idx * 0.5) * 0.25);
             }
-
-            function spRoundedRectGeo(w, h, radius) {
-                const shape = new THREE.Shape();
-                const x = -w/2, y = -h/2;
-                shape.moveTo(x + radius, y); shape.lineTo(x + w - radius, y);
-                shape.quadraticCurveTo(x + w, y, x + w, y + radius);
-                shape.lineTo(x + w, y + h - radius);
-                shape.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-                shape.lineTo(x + radius, y + h);
-                shape.quadraticCurveTo(x, y + h, x, y + h - radius);
-                shape.lineTo(x, y + radius); shape.quadraticCurveTo(x, y, x + radius, y);
-                const geo = new THREE.ShapeGeometry(shape);
-                const pos = geo.attributes.position, uvsArr = [];
-                for (let i = 0; i < pos.count; i++) uvsArr.push((pos.getX(i) + w/2) / w, (pos.getY(i) + h/2) / h);
-                geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvsArr, 2));
-                return geo;
+          });
+        } else if (spIntroComplete) {
+          if (spNeedZoomIn) {
+            camera.position.lerp(spZoomInTarget, 0.08);
+            if (camera.position.distanceTo(controls.target) <= controls.minDistance + 0.1) {
+              spNeedZoomIn = false;
             }
+          }
+          spGroup.rotation.y += 0.0015;
+          if (spParticlesMesh) {
+            spParticlesMesh.rotation.y += 0.0006;
+            spParticlesMesh.rotation.x += 0.0003;
+          }
+        }
 
-            function spCreateFloatingImages() {
-                spFloatingGroup = new THREE.Group();
-                scene.add(spFloatingGroup);
-                const total = 32, grid = 16, used = [];
-                const glowTex = spGlowTexture(128);
+        // Chuyển động ráp mảnh từ xa vào
+        if (!spIntroComplete && spIntroStartTime > 0 && spMeshes.length > 0) {
+          const elapsed = Date.now() - spIntroStartTime, dur = SP_INTRO_DURATION_MS / 1000;
+          spMeshes.forEach(mesh => {
+            const delay = (mesh.userData.introDelay || 0) / 1000;
+            const t = Math.min(1, Math.max(0, (elapsed / 1000 - delay) / dur));
+            const eased = 1 - Math.pow(1 - t, 1.4);
+            mesh.position.lerpVectors(mesh.userData.introStartPos, new THREE.Vector3(0, 0, 0), eased);
+          });
+          if (elapsed > SP_INTRO_DURATION_MS + SP_INTRO_STAGGER_MS) {
+            spIntroComplete = true;
+            spIntroCompleteTime = Date.now();
+            spMeshes.forEach(m => { m.position.set(0, 0, 0); });
+          }
+        }
+      }
 
-                function findPos(size) {
-                    const d = size * 1.5 + 1;
-                    for (let i = 0; i < 60; i++) {
-                        const x = (Math.random() - .5) * grid, y = (Math.random() - .5) * grid, z = (Math.random() - .5) * grid;
-                        if (used.every(p => Math.hypot(x - p.x, y - p.y, z - p.z) >= d)) {
-                            used.push({ x, y, z });
-                            return { x, y, z };
-                        }
-                    }
-                    return { x: (Math.random() - .5) * grid, y: (Math.random() - .5) * grid, z: (Math.random() - .5) * grid };
-                }
+      // ── VỤ NỔ SIÊU TÂN TINH (SUPERNOVA EXPLOSION) ──
+      let isExploding = false;
+      let explodeStartTime = 0;
+      let explodeVelocities = null;
+      let explodeStartPositions = null;
 
-                for (let i = 0; i < total; i++) {
-                    const tex = spTextures[i % spTextures.length];
-                    const sv = 0.6 + Math.random() * 1.6, w = 1.5 * sv, h = 1.1 * sv, cr = 0.15 * sv;
-                    const ig = new THREE.Group();
+      function triggerExplosion() {
+        if (!particleSystem || particleCount === 0) return;
+        isMorphing = false;
+        isExploding = true;
+        explodeStartTime = clock.getElapsedTime();
+        explodeVelocities = new Float32Array(particleCount * 3);
+        explodeStartPositions = new Float32Array(sourcePositions);
+        for (let i = 0; i < particleCount; i++) {
+          const i3 = i * 3;
+          const dir = new THREE.Vector3(
+            (Math.random() - 0.5) * 2,
+            (Math.random() - 0.5) * 2,
+            (Math.random() - 0.2) * 2
+          ).normalize();
+          const speed = 5 + Math.random() * 16;
+          explodeVelocities[i3] = dir.x * speed;
+          explodeVelocities[i3 + 1] = dir.y * speed;
+          explodeVelocities[i3 + 2] = dir.z * speed;
+        }
+      }
 
-                    const gMat = new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false });
-                    ig.add(new THREE.Mesh(spRoundedRectGeo(w * 1.4, h * 1.4, cr * 1.4), gMat));
+      function showText(text) {
+        const result = generateFromText(text, PARAMS.autoPlayTextCount, PARAMS.textShapeSize);
+        if (!result) return;
+        bloomPass.strength = 0.32;
+        bloomPass.threshold = 0.35;
+        if (particleSystem && particleCount === result.positions.length / 3) {
+          startMorphToResult(result);
+        } else {
+          rebuildParticleSystemForImage(result);
+        }
+      }
 
-                    const iMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true, opacity: 0 });
-                    ig.add(new THREE.Mesh(spRoundedRectGeo(w, h, cr), iMat));
+      // ── CHU TRÌNH TỰ ĐỘNG CHẠY VŨ TRỤ (AUTOPLAY) ──
+      async function startAutoPlay() {
+        try {
+          startBgMusic();
+        } catch (e) { }
 
-                    const tPhi = Math.acos(2 * Math.random() - 1), tTheta = Math.random() * Math.PI * 2;
-                    ig.position.set(SP_RADIUS * .5 * Math.sin(tPhi) * Math.cos(tTheta), SP_RADIUS * .5 * Math.cos(tPhi), SP_RADIUS * .5 * Math.sin(tPhi) * Math.sin(tTheta));
-                    const tp = findPos(Math.max(w, h));
-                    ig.userData = {
-                        startPos: ig.position.clone(),
-                        targetPos: new THREE.Vector3(tp.x, tp.y, tp.z),
-                        floatSpeedY: 0.3 + Math.random() * 0.5,
-                        floatAmplY: 0.1 + Math.random() * 0.2,
-                        floatPhase: Math.random() * Math.PI * 2,
-                        delay: Math.random() * 0.5,
-                        basePos: new THREE.Vector3(tp.x, tp.y, tp.z),
-                        iMat, gMat,
-                        driftSpeed: 0.002 + Math.random() * 0.003,
-                        baseZ: tp.z
-                    };
-                    spFloatingGroup.add(ig);
-                    spFloatingImages.push(ig);
-                }
+        try {
+          const morphTexts = (cfg.morphTexts && cfg.morphTexts.length) ? cfg.morphTexts : ['Chúc Mừng', '20/10', 'Minh Khuê 💕'];
+          for (let i = 0; i < morphTexts.length; i++) {
+            showText(morphTexts[i]);
+            // Chữ cuối "Minh Khuê 💕" giữ 2.8s cho người xem ngắm, các chữ trước 2.3s
+            await sleep(i === morphTexts.length - 1 ? 2800 : 2300);
+          }
+        } catch (err) {
+          console.error('Lỗi trong chuỗi text:', err);
+        }
+
+        // Chuyển cảnh tức thì 100%: Nổ hạt bừng sáng và bắt đầu ráp Quả Cầu 3D mượt mà
+        try {
+          triggerExplosion();
+          startSpherePhase();
+        } catch (e) {
+          console.error('Lỗi chuyển cảnh quả cầu:', e);
+        }
+      }
+
+      // ── CHUẨN BỊ VÀ HIỆN NÚT GIỮ ──
+      async function prepareAndWait() {
+        try {
+          await Promise.race([
+            document.fonts.load('135px "Pacifico"'),
+            sleep(1200)
+          ]);
+        } catch (e) { }
+
+        // Tải trước textures cho Quả Cầu 3D ngay từ đầu để sẵn sàng chuyển cảnh tức thì
+        const loader = new THREE.TextureLoader();
+        const sphereImgs = (cfg.sphereImages && cfg.sphereImages.length) ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg'];
+        const loadSingleTex = (url) => new Promise(resolve => {
+          loader.load(url, tex => resolve(tex), undefined, () => resolve(null));
+        });
+        Promise.all(sphereImgs.map(loadSingleTex)).then(textures => {
+          const valid = textures.filter(t => t !== null);
+          if (valid.length > 0) {
+            spTextures = valid;
+          }
+        });
+
+        initScatterParticles();
+
+        const wrap = document.getElementById('start-wrap');
+        const ringFill = document.getElementById('ring-fill');
+        wrap.style.display = 'flex';
+
+        let holdTimer = null;
+        let holdStartTime = 0;
+        const HOLD_MS = 600;
+        let triggered = false;
+
+        function triggerStart() {
+          if (triggered) return;
+          triggered = true;
+          if (holdTimer) {
+            clearInterval(holdTimer);
+            holdTimer = null;
+          }
+          try { startBgMusic(); } catch (_) {}
+          wrap.classList.add('held');
+          ringFill.style.transition = 'stroke-dashoffset 0.2s ease-out';
+          ringFill.style.strokeDashoffset = '0';
+          setTimeout(() => {
+            wrap.style.display = 'none';
+            startAutoPlay();
+          }, 220);
+        }
+
+        function onDown(e) {
+          if (triggered) return;
+          if (e && e.pointerId && wrap.setPointerCapture) {
+            try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
+          }
+          try { startBgMusic(); } catch (_) {}
+          if (holdTimer) {
+            clearInterval(holdTimer);
+            holdTimer = null;
+          }
+          holdStartTime = Date.now();
+          ringFill.style.transition = 'stroke-dashoffset 0.6s linear';
+          ringFill.style.strokeDashoffset = '163.36';
+          void ringFill.offsetHeight;
+          ringFill.style.strokeDashoffset = '0';
+
+          holdTimer = setInterval(function () {
+            const elapsed = Date.now() - holdStartTime;
+            if (elapsed >= 250) wrap.classList.add('held');
+            if (elapsed >= HOLD_MS) {
+              triggerStart();
             }
+          }, 35);
+        }
 
-            function spTriggerExplosion() {
-                if (spIsExploded) return;
-                spIsExploded = true;
-                spExplosionProgress = 0;
-                spFadeProgress = 0;
-                spMeshes.forEach(m => { if (m.material) m.material.transparent = true; });
-                spExplosionStartTime = Date.now();
-                controls.autoRotate = false;
-                controls.enableRotate = true;
-                controls.maxDistance = 18;
-
-                spCreateFloatingImages();
-                document.getElementById('btn-flying-corner').classList.add('visible');
-
-                const flash = document.createElement('div');
-                flash.style.cssText = 'position:fixed;inset:0;background:radial-gradient(circle,rgba(255,105,180,0.85) 0%,transparent 70%);pointer-events:none;z-index:1000;transition:opacity 0.9s;';
-                document.body.appendChild(flash);
-                setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 900); }, 50);
+        function onUp(e) {
+          if (triggered) return;
+          const elapsed = Date.now() - holdStartTime;
+          // Người dùng đã nhấn giữ hoặc chạm vào nút -> kích hoạt ngay mượt mà
+          if (elapsed >= 80 || holdStartTime > 0) {
+            triggerStart();
+          } else {
+            if (holdTimer) {
+              clearInterval(holdTimer);
+              holdTimer = null;
             }
+            wrap.classList.remove('held');
+            ringFill.style.transition = 'stroke-dashoffset 0.25s ease';
+            ringFill.style.strokeDashoffset = '163.36';
+          }
+        }
 
-            function spShowHint(text) {
-                const el = document.getElementById('sphere-click-hint');
-                if (!el) return;
-                el.innerText = text;
-                el.classList.add('visible');
-                setTimeout(() => el.classList.remove('visible'), 3500);
+        wrap.addEventListener('pointerdown', onDown);
+        wrap.addEventListener('pointerup', onUp);
+        wrap.addEventListener('click', (e) => {
+          e.preventDefault();
+          triggerStart();
+        });
+      }
+
+      // ── VÒNG LẶP RENDER CHÍNH (ANIMATE) ──
+      function animate() {
+        requestAnimationFrame(animate);
+        if (!isInitialized) return;
+
+        const elapsedTime = clock.getElapsedTime();
+        const deltaTime = clock.getDelta();
+        controls.update();
+
+        if (particlesGeometry && particleCount > 0) {
+          const positions = particlesGeometry.attributes.position.array;
+          if (isExploding && explodeVelocities && explodeStartPositions) {
+            const t = elapsedTime - explodeStartTime;
+            for (let i = 0; i < particleCount; i++) {
+              const i3 = i * 3;
+              positions[i3] = explodeStartPositions[i3] + explodeVelocities[i3] * t;
+              positions[i3 + 1] = explodeStartPositions[i3 + 1] + explodeVelocities[i3 + 1] * t;
+              positions[i3 + 2] = explodeStartPositions[i3 + 2] + explodeVelocities[i3 + 2] * t;
             }
-
-            function spHandleTap(cx, cy) {
-                if (spIsExploded || !spIntroComplete) return;
-                spMouse.x = (cx / window.innerWidth) * 2 - 1;
-                spMouse.y = -(cy / window.innerHeight) * 2 + 1;
-                spRaycaster.setFromCamera(spMouse, camera);
-
-                const hits = spRaycaster.intersectObject(spClickSphere);
-                if (hits.length > 0) {
-                    document.getElementById('sphere-click-hint').classList.remove('visible');
-                    if (!spHasZoomedIn) {
-                        spHasZoomedIn = true;
-                        spZoomInTime = Date.now();
-                        spNeedZoomIn = true;
-                        const dir = camera.position.clone().sub(controls.target).normalize();
-                        spZoomInTarget.copy(controls.target).add(dir.multiplyScalar(controls.minDistance + 1));
-                        spShowHint('Chạm lần nữa nào ✨');
-                    } else {
-                        spTriggerExplosion();
-                    }
-                }
+          } else if (isMorphing && targetPositions && targetPositions[0]) {
+            const t = Math.min(1, (elapsedTime - morphStartTime) / PARAMS.morphDuration);
+            const smoothT = t * t * (3 - 2 * t);
+            const target = targetPositions[0];
+            for (let i = 0; i < particleCount; i++) {
+              const i3 = i * 3;
+              positions[i3] = sourcePositions[i3] + (target[i3] - sourcePositions[i3]) * smoothT;
+              positions[i3 + 1] = sourcePositions[i3 + 1] + (target[i3 + 1] - sourcePositions[i3 + 1]) * smoothT;
+              positions[i3 + 2] = sourcePositions[i3 + 2] + (target[i3 + 2] - sourcePositions[i3 + 2]) * smoothT;
             }
-
-            // ── BỨC THƯ TÌNH CUPID ──
-            function startCupidLetterSequence() {
-                const overlay = document.getElementById('cupid-letter-overlay');
-                const cupidImg = document.getElementById('cupid-flying-img');
-                const letterFrame = document.getElementById('cupid-letter-frame');
-                if (!overlay || !cupidImg || !letterFrame) return;
-
-                cupidLetterState = 'flying';
-                cupidFlyStartTime = Date.now();
-                overlay.classList.add('visible');
-                cupidImg.style.display = 'block';
-
-                const startLeft = window.innerWidth * 0.15;
-                const startTop = window.innerHeight * 0.85;
-                cupidImg.style.left = startLeft + 'px';
-                cupidImg.style.top = startTop + 'px';
-                cupidImg.style.opacity = '1';
-                cupidImg.style.transition = 'none';
-
-                letterFrame.classList.remove('visible');
-                document.getElementById('letter-envelope-img')?.classList.remove('visible');
+            if (t >= 1) {
+              isMorphing = false;
+              sourcePositions = new Float32Array(target);
             }
-
-            function updateCupidFly() {
-                if (cupidLetterState !== 'flying') return;
-                const elapsed = Date.now() - cupidFlyStartTime;
-                const progress = Math.min(1, elapsed / CUPID_FLY_DURATION_MS);
-                const eased = 1 - Math.pow(1 - progress, 1.3);
-                const cupidImg = document.getElementById('cupid-flying-img');
-                if (!cupidImg) return;
-
-                const startLeft = window.innerWidth * 0.15;
-                const startTop = window.innerHeight * 0.85;
-                const endLeft = window.innerWidth * 0.5;
-                const endTop = window.innerHeight * 0.5;
-
-                cupidImg.style.left = (startLeft + (endLeft - startLeft) * eased) + 'px';
-                cupidImg.style.top = (startTop + (endTop - startTop) * eased) + 'px';
-
-                if (progress >= 1) {
-                    cupidLetterState = 'letterImage';
-                    cupidImg.style.transition = 'opacity 0.4s ease-out';
-                    cupidImg.style.opacity = '0';
-                    setTimeout(() => {
-                        cupidImg.style.display = 'none';
-                        document.getElementById('letter-envelope-img')?.classList.add('visible');
-                    }, 400);
-                }
+          } else {
+            // Sóng trôi bồng bềnh
+            for (let i = 0; i < particleCount; i++) {
+              const i3 = i * 3;
+              sourceVec.fromArray(sourcePositions, i3);
+              positions[i3] = sourceVec.x + noise3D(sourceVec.x * 0.35, sourceVec.y * 0.35, elapsedTime * 0.16) * 0.22;
+              positions[i3 + 1] = sourceVec.y + noise3D(sourceVec.y * 0.35, sourceVec.z * 0.35, elapsedTime * 0.16) * 0.22;
+              positions[i3 + 2] = sourceVec.z + noise3D(sourceVec.z * 0.35, sourceVec.x * 0.35, elapsedTime * 0.16) * 0.22;
             }
-
-            function startLetterTypingEffect(letterContent, cursor) {
-                const text = cfg.letter?.text || "Happy Women's Day 20/10!\n\nChúc em luôn xinh đẹp, hạnh phúc và bình an! ❤️";
-                const TYPING_SPEED_MS = 40;
-                const chars = Array.from(text);
-                let currentIndex = 0;
-
-                function typeNextChar() {
-                    if (currentIndex < chars.length) {
-                        const char = chars[currentIndex];
-                        letterContent.insertBefore(document.createTextNode(char), cursor);
-                        currentIndex++;
-                        if (char === '\n') {
-                            cursor.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                        }
-                        const delay = char === '\n' ? 180 : TYPING_SPEED_MS;
-                        setTimeout(typeNextChar, delay);
-                    } else {
-                        setTimeout(() => {
-                            if (cursor) cursor.style.display = 'none';
-                            const wrap = document.getElementById('letterImageWrap');
-                            const imgEl = document.getElementById('letterInlineImage');
-                            const captionEl = document.getElementById('letterImageCaption');
-                            if (cfg.letter?.image && imgEl) {
-                                imgEl.src = cfg.letter.image;
-                                if (captionEl) captionEl.textContent = cfg.letter.caption || 'Yêu em ❤️';
-                                wrap.style.display = 'block';
-                                requestAnimationFrame(() => { wrap.classList.add('visible'); });
-                            }
-                        }, 300);
-                    }
-                }
-                setTimeout(typeNextChar, 250);
-            }
-
-            function handleLetterEnvelopeClick() {
-                if (cupidLetterState !== 'letterImage') return;
-                cupidLetterState = 'showingLetter';
-                startBgMusic();
-
-                document.getElementById('letter-envelope-img')?.classList.remove('visible');
-                const letterFrame = document.getElementById('cupid-letter-frame');
-                const letterContent = document.getElementById('letterContent');
-                const letterImageWrap = document.getElementById('letterImageWrap');
-
-                if (letterImageWrap) {
-                    letterImageWrap.style.display = 'none';
-                    letterImageWrap.classList.remove('visible');
-                }
-
-                if (letterFrame && letterContent) {
-                    letterContent.textContent = '';
-                    const cursor = document.createElement('span');
-                    cursor.className = 'letter-cursor';
-                    letterContent.appendChild(cursor);
-                    letterFrame.classList.add('visible');
-                    startLetterTypingEffect(letterContent, cursor);
-                }
-            }
-
-            document.getElementById('letter-envelope-img')?.addEventListener('click', handleLetterEnvelopeClick);
-            document.getElementById('letterCloseBtn')?.addEventListener('click', () => {
-                document.getElementById('cupid-letter-overlay')?.classList.remove('visible');
-                cupidLetterState = 'hidden';
-            });
-
-            // ── KHỞI CHẠY GIAI ĐOẠN QUẢ CẦU (START SPHERE PHASE) ──
-            let spCameraTransitioning = false;
-            const spTargetCameraPos = new THREE.Vector3();
-
-            function startSpherePhase() {
-                // Chuyển cảnh mượt mà tức thì: KHÔNG màn đen, KHÔNG gián đoạn
-                camera.fov = 75;
-                camera.updateProjectionMatrix();
-                if (isMobileSP) {
-                    spTargetCameraPos.set(0, 0, 16);
-                } else {
-                    spTargetCameraPos.set(0, 0, 11);
-                }
-                spCameraTransitioning = true;
-                controls.target.set(0, 0, 0);
-                controls.enableRotate = true;
-                controls.enableZoom = true;
-                controls.enablePan = false;
-                controls.minDistance = isMobileSP ? 5.5 : 6;
-                controls.maxDistance = isMobileSP ? 26 : 20;
-                controls.minPolarAngle = Math.PI * 0.2;
-                controls.maxPolarAngle = Math.PI * 0.8;
-                controls.update();
-
-                // Dọn dẹp hệ thống hạt cũ sau 2.2s khi các hạt nổ đã bay rộng ra ngoài tầm mắt
-                setTimeout(() => {
-                    if (particleSystem) {
-                        scene.remove(particleSystem);
-                        if (particlesGeometry) particlesGeometry.dispose();
-                        if (particlesMaterial) particlesMaterial.dispose();
-                        particleSystem = null;
-                        particleCount = 0;
-                    }
-                    if (backgroundParticleSystem) {
-                        scene.remove(backgroundParticleSystem);
-                        if (backgroundParticlesGeometry) backgroundParticlesGeometry.dispose();
-                        backgroundParticleSystem = null;
-                    }
-                }, 2200);
-
-                scene.fog = null;
-                scene.background = new THREE.Color(0x000000);
-                bloomPass.strength = 0;
-                bloomPass.threshold = 1;
-                renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-                const startWrap = document.getElementById('start-wrap');
-                if (startWrap) startWrap.style.display = 'none';
-
-                spGroup = new THREE.Group();
-                scene.add(spGroup);
-
-                spClickSphere = new THREE.Mesh(
-                    new THREE.SphereGeometry(SP_RADIUS * 1.15, 32, 32),
-                    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
-                );
-                scene.add(spClickSphere);
-                spRaycaster = new THREE.Raycaster();
-                spMouse = new THREE.Vector2();
-
-                // Hào quang hạt quanh quả cầu
-                const sCnt = 500, sPos = new Float32Array(sCnt * 3), sCol = new Float32Array(sCnt * 3);
-                for (let i = 0; i < sCnt; i++) {
-                    const t2 = Math.random() * Math.PI * 2, p2 = Math.acos(2 * Math.random() - 1);
-                    const r2 = SP_RADIUS * 1.25 + Math.random() * 3.5;
-                    sPos[i * 3]     = r2 * Math.sin(p2) * Math.cos(t2);
-                    sPos[i * 3 + 1] = r2 * Math.cos(p2);
-                    sPos[i * 3 + 2] = r2 * Math.sin(p2) * Math.sin(t2);
-                    sCol[i * 3] = 1; sCol[i * 3 + 1] = 0.5 + Math.random() * 0.3; sCol[i * 3 + 2] = 0.7 + Math.random() * 0.3;
-                }
-                const sGeo = new THREE.BufferGeometry();
-                sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
-                sGeo.setAttribute('color', new THREE.BufferAttribute(sCol, 3));
-                spParticlesMesh = new THREE.Points(sGeo, new THREE.PointsMaterial({ size: 0.045, vertexColors: true, transparent: true, opacity: 0.85 }));
-                scene.add(spParticlesMesh);
-
-                // Mưa sao hạt bay ngược
-                const rPos = new Float32Array(SP_RAIN_COUNT * 3), rCol = new Float32Array(SP_RAIN_COUNT * 3);
-                for (let i = 0; i < SP_RAIN_COUNT; i++) {
-                    rPos[i * 3]     = (Math.random() - .5) * 2 * SP_FLYOUT_BOUND;
-                    rPos[i * 3 + 1] = -SP_FLYOUT_BOUND + Math.random() * 2 * SP_FLYOUT_BOUND;
-                    rPos[i * 3 + 2] = (Math.random() - .5) * 2 * SP_FLYOUT_BOUND;
-                    rCol[i * 3] = 1; rCol[i * 3 + 1] = 0.5 + Math.random() * 0.3; rCol[i * 3 + 2] = 0.8;
-                }
-                spRainPositions = rPos;
-                const rGeo = new THREE.BufferGeometry();
-                rGeo.setAttribute('position', new THREE.BufferAttribute(rPos, 3));
-                rGeo.setAttribute('color', new THREE.BufferAttribute(rCol, 3));
-                spRainMesh = new THREE.Points(rGeo, new THREE.PointsMaterial({ size: 0.04, vertexColors: true, transparent: true, opacity: 0.75 }));
-                scene.add(spRainMesh);
-
-                // Particles nền CSS
-                const bg = document.getElementById('sphere-particles-bg');
-                if (bg) {
-                    bg.innerHTML = '';
-                    for (let i = 0; i < 28; i++) {
-                        const d = document.createElement('div');
-                        d.className = 'sp-particle';
-                        d.style.left = Math.random() * 100 + '%';
-                        d.style.animationDelay = Math.random() * 14 + 's';
-                        d.style.animationDuration = (10 + Math.random() * 10) + 's';
-                        bg.appendChild(d);
-                    }
-                    bg.style.opacity = '1';
-                }
-
-                // Dựng quả cầu 3D với textures đã tải sẵn
-                function doBuildSphere() {
-                    if (!spTextures || !spTextures.length) {
-                        const c = document.createElement('canvas'); c.width = c.height = 256;
-                        const ctx = c.getContext('2d');
-                        const grad = ctx.createLinearGradient(0, 0, 256, 256);
-                        grad.addColorStop(0, '#ff758c'); grad.addColorStop(1, '#ff7eb3');
-                        ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 256);
-                        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 36px "Pacifico", cursive';
-                        ctx.textAlign = 'center'; ctx.fillText('20/10 💕', 128, 140);
-                        const fallbackTex = new THREE.CanvasTexture(c);
-                        fallbackTex.colorSpace = THREE.SRGBColorSpace;
-                        spTextures = [fallbackTex];
-                    } else {
-                        spTextures.forEach(t => { t.colorSpace = THREE.SRGBColorSpace; });
-                    }
-                    spBuildSphere();
-                    spPhase = true;
-
-                    setTimeout(() => { spShowHint('Chạm vào quả cầu nhé ✨'); }, 1500);
-                }
-
-                // Dựng quả cầu ngay lập tức, hoàn toàn không trễ
-                doBuildSphere();
-
-                // Bắt sự kiện tương tác
-                const canvasEl = renderer.domElement;
-                function spDown(e) {
-                    const c = e.touches?.[0] || e;
-                    spMouseDownX = c.clientX; spMouseDownY = c.clientY;
-                    spIsPointerDown = true; spWasDrag = false;
-                }
-                function spMove(e) {
-                    const c = e.touches?.[0] || e;
-                    if (spIsPointerDown && Math.hypot(c.clientX - spMouseDownX, c.clientY - spMouseDownY) > 6) {
-                        spWasDrag = true;
-                    }
-                }
-                function spUp() { spIsPointerDown = false; }
-
-                canvasEl.addEventListener('mousedown', spDown);
-                canvasEl.addEventListener('mouseup', spUp);
-                canvasEl.addEventListener('mousemove', spMove);
-                canvasEl.addEventListener('click', e => { if (!spWasDrag) spHandleTap(e.clientX, e.clientY); });
-                canvasEl.addEventListener('touchstart', spDown, { passive: true });
-                canvasEl.addEventListener('touchmove', spMove, { passive: true });
-                canvasEl.addEventListener('touchend', e => {
-                    spUp();
-                    if (!spWasDrag) {
-                        const c = e.changedTouches[0];
-                        spHandleTap(c.clientX, c.clientY);
-                    }
-                });
-
-                document.getElementById('btn-flying-corner')?.addEventListener('click', () => {
-                    startCupidLetterSequence();
-                });
-            }
-
-            // ── CẬP NHẬT MỖI FRAME CỦA QUẢ CẦU ──
-            function updateSpherePhase() {
-                spTime += 0.01;
-
-                if (spRainMesh && spRainPositions) {
-                    const n = spRainPositions.length / 3;
-                    for (let j = 0; j < n; j++) {
-                        spRainPositions[j * 3 + 1] += SP_RAIN_SPEED;
-                        if (spRainPositions[j * 3 + 1] > 6) {
-                            spRainPositions[j * 3 + 1] = -SP_FLYOUT_BOUND;
-                            spRainPositions[j * 3] = (Math.random() - .5) * 2 * SP_FLYOUT_BOUND;
-                            spRainPositions[j * 3 + 2] = (Math.random() - .5) * 2 * SP_FLYOUT_BOUND;
-                        }
-                    }
-                    spRainMesh.geometry.attributes.position.needsUpdate = true;
-                }
-
-                if (spIsExploded) {
-                    spExplosionProgress = Math.min(1, spExplosionProgress + 0.018);
-                    spFadeProgress = Math.min(1, spFadeProgress + 0.04);
-                    spGroup.children.forEach(child => {
-                        if (child.material) {
-                            child.material.opacity = Math.max(0, 1 - spFadeProgress);
-                            if (child.material.opacity <= 0) child.visible = false;
-                        }
-                    });
-                    spClickSphere.visible = false;
-
-                    if (spFloatingGroup) {
-                        spDriftTiltAngle += spDriftTiltDir * 0.0003;
-                        if (spDriftTiltAngle >= 0.25) { spDriftTiltAngle = 0.25; spDriftTiltDir = -1; }
-                        else if (spDriftTiltAngle <= -0.25) { spDriftTiltAngle = -0.25; spDriftTiltDir = 1; }
-                        spFloatingGroup.rotation.y = spDriftTiltAngle;
-                    }
-
-                    const maxY = 10, minY = -10;
-                    spFloatingImages.forEach((img, idx) => {
-                        const d = img.userData;
-                        const dp = Math.max(0, (spExplosionProgress - d.delay) / (1 - d.delay));
-                        if (dp > 0) {
-                            const t = Math.min(1, dp), eased = 1 - Math.pow(1 - t, 2);
-                            const fY = Math.sin(spTime * 2 * d.floatSpeedY + d.floatPhase) * d.floatAmplY;
-                            d.basePos.y += d.driftSpeed * 12;
-
-                            if (eased < 1) {
-                                img.position.x = d.startPos.x + (d.targetPos.x - d.startPos.x) * eased;
-                                img.position.z = d.startPos.z + (d.targetPos.z - d.startPos.z) * eased;
-                                img.position.y = d.startPos.y + (d.targetPos.y - d.startPos.y) * eased + (d.basePos.y - d.targetPos.y) + fY;
-                            } else {
-                                img.position.x = d.basePos.x;
-                                img.position.y = d.basePos.y + fY;
-                                img.position.z = d.baseZ;
-                            }
-
-                            if (d.basePos.y > maxY) {
-                                d.basePos.y = minY;
-                                d.basePos.x = (Math.random() - .5) * 16;
-                                d.baseZ = (Math.random() - .5) * 16;
-                            }
-
-                            const op = Math.min(1, dp * 2);
-                            d.iMat.opacity = op;
-                            if (d.gMat) d.gMat.opacity = op * (0.65 + Math.sin(spTime * 3 + idx * 0.5) * 0.25);
-                        }
-                    });
-                } else if (spIntroComplete) {
-                    if (spNeedZoomIn) {
-                        camera.position.lerp(spZoomInTarget, 0.08);
-                        if (camera.position.distanceTo(controls.target) <= controls.minDistance + 0.1) {
-                            spNeedZoomIn = false;
-                        }
-                    }
-                    spGroup.rotation.y += 0.0015;
-                    if (spParticlesMesh) {
-                        spParticlesMesh.rotation.y += 0.0006;
-                        spParticlesMesh.rotation.x += 0.0003;
-                    }
-                }
-
-                // Chuyển động ráp mảnh từ xa vào
-                if (!spIntroComplete && spIntroStartTime > 0 && spMeshes.length > 0) {
-                    const elapsed = Date.now() - spIntroStartTime, dur = SP_INTRO_DURATION_MS / 1000;
-                    spMeshes.forEach(mesh => {
-                        const delay = (mesh.userData.introDelay || 0) / 1000;
-                        const t = Math.min(1, Math.max(0, (elapsed / 1000 - delay) / dur));
-                        const eased = 1 - Math.pow(1 - t, 1.4);
-                        mesh.position.lerpVectors(mesh.userData.introStartPos, new THREE.Vector3(0, 0, 0), eased);
-                    });
-                    if (elapsed > SP_INTRO_DURATION_MS + SP_INTRO_STAGGER_MS) {
-                        spIntroComplete = true;
-                        spIntroCompleteTime = Date.now();
-                        spMeshes.forEach(m => { m.position.set(0, 0, 0); });
-                    }
-                }
-            }
-
-            // ── VỤ NỔ SIÊU TÂN TINH (SUPERNOVA EXPLOSION) ──
-            let isExploding = false;
-            let explodeStartTime = 0;
-            let explodeVelocities = null;
-            let explodeStartPositions = null;
-
-            function triggerExplosion() {
-                if (!particleSystem || particleCount === 0) return;
-                isMorphing = false;
-                isExploding = true;
-                explodeStartTime = clock.getElapsedTime();
-                explodeVelocities = new Float32Array(particleCount * 3);
-                explodeStartPositions = new Float32Array(sourcePositions);
-                for (let i = 0; i < particleCount; i++) {
-                    const i3 = i * 3;
-                    const dir = new THREE.Vector3(
-                        (Math.random() - 0.5) * 2,
-                        (Math.random() - 0.5) * 2,
-                        (Math.random() - 0.2) * 2
-                    ).normalize();
-                    const speed = 5 + Math.random() * 16;
-                    explodeVelocities[i3]     = dir.x * speed;
-                    explodeVelocities[i3 + 1] = dir.y * speed;
-                    explodeVelocities[i3 + 2] = dir.z * speed;
-                }
-            }
-
-            function showText(text) {
-                const result = generateFromText(text, PARAMS.autoPlayTextCount, PARAMS.textShapeSize);
-                if (!result) return;
-                bloomPass.strength = 0.32;
-                bloomPass.threshold = 0.35;
-                if (particleSystem && particleCount === result.positions.length / 3) {
-                    startMorphToResult(result);
-                } else {
-                    rebuildParticleSystemForImage(result);
-                }
-            }
-
-            // ── CHU TRÌNH TỰ ĐỘNG CHẠY VŨ TRỤ (AUTOPLAY) ──
-            async function startAutoPlay() {
-                try {
-                    startBgMusic();
-                } catch (e) {}
-
-                try {
-                    const morphTexts = (cfg.morphTexts && cfg.morphTexts.length) ? cfg.morphTexts : ['Chúc Mừng', '20/10', 'Minh Khuê 💕'];
-                    for (let i = 0; i < morphTexts.length; i++) {
-                        showText(morphTexts[i]);
-                        // Chữ cuối "Minh Khuê 💕" giữ 2.8s cho người xem ngắm, các chữ trước 2.3s
-                        await sleep(i === morphTexts.length - 1 ? 2800 : 2300);
-                    }
-                } catch (err) {
-                    console.error('Lỗi trong chuỗi text:', err);
-                }
-
-                // Chuyển cảnh tức thì 100%: Nổ hạt bừng sáng và bắt đầu ráp Quả Cầu 3D mượt mà
-                try {
-                    triggerExplosion();
-                    startSpherePhase();
-                } catch (e) {
-                    console.error('Lỗi chuyển cảnh quả cầu:', e);
-                }
-            }
-
-            // ── CHUẨN BỊ VÀ HIỆN NÚT GIỮ ──
-            async function prepareAndWait() {
-                try {
-                    await Promise.race([
-                        document.fonts.load('135px "Pacifico"'),
-                        sleep(1200)
-                    ]);
-                } catch (e) {}
-
-                // Tải trước textures cho Quả Cầu 3D ngay từ đầu để sẵn sàng chuyển cảnh tức thì
-                const loader = new THREE.TextureLoader();
-                const sphereImgs = (cfg.sphereImages && cfg.sphereImages.length) ? cfg.sphereImages : ['photos/1.jpg', 'photos/2.jpg', 'photos/3.jpg', 'photos/bouquet.jpg'];
-                const loadSingleTex = (url) => new Promise(resolve => {
-                    loader.load(url, tex => resolve(tex), undefined, () => resolve(null));
-                });
-                Promise.all(sphereImgs.map(loadSingleTex)).then(textures => {
-                    const valid = textures.filter(t => t !== null);
-                    if (valid.length > 0) {
-                        spTextures = valid;
-                    }
-                });
-
-                initScatterParticles();
-
-                const wrap = document.getElementById('start-wrap');
-                const ringFill = document.getElementById('ring-fill');
-                wrap.style.display = 'flex';
-
-                let holdTimer = null;
-                let holdStartTime = 0;
-                const HOLD_MS = 1000;
-                let triggered = false;
-
-                function onDown(e) {
-                    e.preventDefault();
-                    if (triggered) return;
-                    startBgMusic();
-                    holdStartTime = Date.now();
-                    ringFill.style.transition = 'stroke-dashoffset 1s linear';
-                    ringFill.style.strokeDashoffset = '163.36';
-                    void ringFill.offsetHeight;
-                    ringFill.style.strokeDashoffset = '0';
-
-                    holdTimer = setInterval(function() {
-                        const elapsed = Date.now() - holdStartTime;
-                        if (elapsed >= 400) wrap.classList.add('held');
-                        if (elapsed >= HOLD_MS) {
-                            clearInterval(holdTimer);
-                            holdTimer = null;
-                            triggered = true;
-                            wrap.style.display = 'none';
-                            startAutoPlay();
-                        }
-                    }, 50);
-                }
-
-                function onUp() {
-                    if (triggered) return;
-                    if (holdTimer) {
-                        clearInterval(holdTimer);
-                        holdTimer = null;
-                    }
-                    wrap.classList.remove('held');
-                    ringFill.style.transition = 'stroke-dashoffset 0.3s ease';
-                    ringFill.style.strokeDashoffset = '163.36';
-                }
-
-                wrap.addEventListener('pointerdown', onDown);
-                wrap.addEventListener('pointerup', onUp);
-                wrap.addEventListener('pointercancel', onUp);
-                wrap.addEventListener('pointerleave', onUp);
-                wrap.addEventListener('mousedown', onDown);
-                wrap.addEventListener('mouseup', onUp);
-                wrap.addEventListener('touchstart', onDown, { passive: false });
-                wrap.addEventListener('touchend', onUp);
-                wrap.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (!triggered) {
-                        triggered = true;
-                        wrap.style.display = 'none';
-                        startAutoPlay();
-                    }
-                });
-            }
-
-            // ── VÒNG LẶP RENDER CHÍNH (ANIMATE) ──
-            function animate() {
-                requestAnimationFrame(animate);
-                if (!isInitialized) return;
-
-                const elapsedTime = clock.getElapsedTime();
-                const deltaTime = clock.getDelta();
-                controls.update();
-
-                if (particlesGeometry && particleCount > 0) {
-                    const positions = particlesGeometry.attributes.position.array;
-                    if (isExploding && explodeVelocities && explodeStartPositions) {
-                        const t = elapsedTime - explodeStartTime;
-                        for (let i = 0; i < particleCount; i++) {
-                            const i3 = i * 3;
-                            positions[i3]     = explodeStartPositions[i3]     + explodeVelocities[i3]     * t;
-                            positions[i3 + 1] = explodeStartPositions[i3 + 1] + explodeVelocities[i3 + 1] * t;
-                            positions[i3 + 2] = explodeStartPositions[i3 + 2] + explodeVelocities[i3 + 2] * t;
-                        }
-                    } else if (isMorphing && targetPositions && targetPositions[0]) {
-                        const t = Math.min(1, (elapsedTime - morphStartTime) / PARAMS.morphDuration);
-                        const smoothT = t * t * (3 - 2 * t);
-                        const target = targetPositions[0];
-                        for (let i = 0; i < particleCount; i++) {
-                            const i3 = i * 3;
-                            positions[i3]     = sourcePositions[i3]     + (target[i3]     - sourcePositions[i3])     * smoothT;
-                            positions[i3 + 1] = sourcePositions[i3 + 1] + (target[i3 + 1] - sourcePositions[i3 + 1]) * smoothT;
-                            positions[i3 + 2] = sourcePositions[i3 + 2] + (target[i3 + 2] - sourcePositions[i3 + 2]) * smoothT;
-                        }
-                        if (t >= 1) {
-                            isMorphing = false;
-                            sourcePositions = new Float32Array(target);
-                        }
-                    } else {
-                        // Sóng trôi bồng bềnh
-                        for (let i = 0; i < particleCount; i++) {
-                            const i3 = i * 3;
-                            sourceVec.fromArray(sourcePositions, i3);
-                            positions[i3]     = sourceVec.x + noise3D(sourceVec.x * 0.35, sourceVec.y * 0.35, elapsedTime * 0.16) * 0.22;
-                            positions[i3 + 1] = sourceVec.y + noise3D(sourceVec.y * 0.35, sourceVec.z * 0.35, elapsedTime * 0.16) * 0.22;
-                            positions[i3 + 2] = sourceVec.z + noise3D(sourceVec.z * 0.35, sourceVec.x * 0.35, elapsedTime * 0.16) * 0.22;
-                        }
-                    }
-                    particlesGeometry.attributes.position.needsUpdate = true;
-                }
-
-                if (backgroundParticlesGeometry && backgroundSourcePositions) {
-                    const pos = backgroundParticlesGeometry.attributes.position.array;
-                    for (let i = 0; i < PARAMS.backgroundScatterCount; i++) {
-                        const i3 = i * 3;
-                        sourceVec.fromArray(backgroundSourcePositions, i3);
-                        pos[i3]     = sourceVec.x + noise3D(sourceVec.x * 0.4, sourceVec.y * 0.4, elapsedTime * 0.18) * 0.2;
-                        pos[i3 + 1] = sourceVec.y + noise3D(sourceVec.y * 0.4, sourceVec.z * 0.4, elapsedTime * 0.18) * 0.2;
-                        pos[i3 + 2] = sourceVec.z + noise3D(sourceVec.z * 0.4, sourceVec.x * 0.4, elapsedTime * 0.18) * 0.2;
-                    }
-                    backgroundParticlesGeometry.attributes.position.needsUpdate = true;
-                }
-
-                if (spCameraTransitioning) {
-                    camera.position.lerp(spTargetCameraPos, 0.05);
-                    controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.08);
-                    if (camera.position.distanceTo(spTargetCameraPos) < 0.15) {
-                        camera.position.copy(spTargetCameraPos);
-                        controls.target.set(0, 0, 0);
-                        spCameraTransitioning = false;
-                    }
-                }
-
-                if (spPhase) updateSpherePhase();
-                if (cupidLetterState === 'flying') updateCupidFly();
-
-                if (spPhase) {
-                    renderer.render(scene, camera);
-                } else {
-                    composer.render(deltaTime);
-                }
-            }
-
-            // ── KHỞI TẠO WEBGL & THREE.JS SCENE ──
-            function init() {
-                const loadingScreen = document.getElementById('loading');
-                const progressBar = document.getElementById('progress');
-
-                function updateProgress(val) {
-                    progressBar.style.width = `${val}%`;
-                    if (val >= 100) {
-                        setTimeout(() => {
-                            loadingScreen.style.opacity = '0';
-                            setTimeout(() => { loadingScreen.style.display = 'none'; }, 700);
-                        }, 250);
-                    }
-                }
-
-                clock = new THREE.Clock();
-                noise3D = createNoise3D(() => Math.random());
-                noise4D = createNoise4D(() => Math.random());
-
-                scene = new THREE.Scene();
-                scene.background = new THREE.Color(0x000000);
-                scene.fog = new THREE.FogExp2(0x000000, 0.03);
-                updateProgress(25);
-
-                camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-                if (isDesktop) {
-                    camera.position.set(0, 6, 18);
-                } else {
-                    camera.position.set(0, 8, 26);
-                }
-                camera.lookAt(scene.position);
-                updateProgress(50);
-
-                const canvas = document.getElementById('webglCanvas');
-                renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'high-performance' });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-                controls = new OrbitControls(camera, renderer.domElement);
-                controls.enableDamping = true;
-                controls.dampingFactor = 0.05;
-                controls.minDistance = 5;
-                controls.maxDistance = 80;
-                controls.autoRotate = false;
-                updateProgress(75);
-
-                scene.add(new THREE.AmbientLight(0x554050));
-                const dirLight1 = new THREE.DirectionalLight(0xfff0f5, 1.4);
-                dirLight1.position.set(15, 20, 10);
-                scene.add(dirLight1);
-
-                composer = new EffectComposer(renderer);
-                composer.addPass(new RenderPass(scene, camera));
-                bloomPass = new UnrealBloomPass(
-                    new THREE.Vector2(window.innerWidth, window.innerHeight),
-                    PARAMS.bloomStrength,
-                    PARAMS.bloomRadius,
-                    PARAMS.bloomThreshold
-                );
-                composer.addPass(bloomPass);
-
-                window.addEventListener('resize', () => {
-                    camera.aspect = window.innerWidth / window.innerHeight;
-                    camera.updateProjectionMatrix();
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                    composer.setSize(window.innerWidth, window.innerHeight);
-                });
-
-                updateProgress(100);
-                isInitialized = true;
-                animate();
-                prepareAndWait();
-            }
-
-            // ── QUẢN LÝ MẬT KHẨU (PASSCODE SCREEN) ──
-            const PASSCODE = cfg.passcode || '3008';
-            let passcodeInput = '';
-
-            const passcodeScreen = document.getElementById('passcodeScreen');
-            const passcodeDots = document.getElementById('passcodeDots');
-            const passcodeBears = document.getElementById('passcodeBears');
-            const bearLeft = document.getElementById('bearLeft');
-            const bearRight = document.getElementById('bearRight');
-
-            if (cfg.enablePasscode) {
-                passcodeScreen.classList.add('visible');
-                // Tắt màn hình loading để hiện passcode
-                const loadingScreen = document.getElementById('loading');
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => { loadingScreen.style.display = 'none'; }, 600);
+          }
+          particlesGeometry.attributes.position.needsUpdate = true;
+        }
+
+        if (backgroundParticlesGeometry && backgroundSourcePositions) {
+          const pos = backgroundParticlesGeometry.attributes.position.array;
+          for (let i = 0; i < PARAMS.backgroundScatterCount; i++) {
+            const i3 = i * 3;
+            sourceVec.fromArray(backgroundSourcePositions, i3);
+            pos[i3] = sourceVec.x + noise3D(sourceVec.x * 0.4, sourceVec.y * 0.4, elapsedTime * 0.18) * 0.2;
+            pos[i3 + 1] = sourceVec.y + noise3D(sourceVec.y * 0.4, sourceVec.z * 0.4, elapsedTime * 0.18) * 0.2;
+            pos[i3 + 2] = sourceVec.z + noise3D(sourceVec.z * 0.4, sourceVec.x * 0.4, elapsedTime * 0.18) * 0.2;
+          }
+          backgroundParticlesGeometry.attributes.position.needsUpdate = true;
+        }
+
+        if (spCameraTransitioning) {
+          camera.position.lerp(spTargetCameraPos, 0.05);
+          controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.08);
+          if (camera.position.distanceTo(spTargetCameraPos) < 0.15) {
+            camera.position.copy(spTargetCameraPos);
+            controls.target.set(0, 0, 0);
+            spCameraTransitioning = false;
+          }
+        }
+
+        if (spPhase) updateSpherePhase();
+        if (cupidLetterState === 'flying') updateCupidFly();
+
+        if (spPhase) {
+          renderer.render(scene, camera);
+        } else {
+          composer.render(deltaTime);
+        }
+      }
+
+      // ── KHỞI TẠO WEBGL & THREE.JS SCENE ──
+      function init() {
+        const loadingScreen = document.getElementById('loading');
+        const progressBar = document.getElementById('progress');
+
+        function updateProgress(val) {
+          progressBar.style.width = `${val}%`;
+          if (val >= 100) {
+            setTimeout(() => {
+              loadingScreen.style.opacity = '0';
+              setTimeout(() => { loadingScreen.style.display = 'none'; }, 700);
+            }, 250);
+          }
+        }
+
+        clock = new THREE.Clock();
+        noise3D = createNoise3D(() => Math.random());
+        noise4D = createNoise4D(() => Math.random());
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        scene.fog = new THREE.FogExp2(0x000000, 0.03);
+        updateProgress(25);
+
+        camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+        if (isDesktop) {
+          camera.position.set(0, 6, 18);
+        } else {
+          camera.position.set(0, 8, 26);
+        }
+        camera.lookAt(scene.position);
+        updateProgress(50);
+
+        const canvas = document.getElementById('webglCanvas');
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 5;
+        controls.maxDistance = 80;
+        controls.autoRotate = false;
+        updateProgress(75);
+
+        scene.add(new THREE.AmbientLight(0x554050));
+        const dirLight1 = new THREE.DirectionalLight(0xfff0f5, 1.4);
+        dirLight1.position.set(15, 20, 10);
+        scene.add(dirLight1);
+
+        composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+        bloomPass = new UnrealBloomPass(
+          new THREE.Vector2(window.innerWidth, window.innerHeight),
+          PARAMS.bloomStrength,
+          PARAMS.bloomRadius,
+          PARAMS.bloomThreshold
+        );
+        composer.addPass(bloomPass);
+
+        window.addEventListener('resize', () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          composer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        updateProgress(100);
+        isInitialized = true;
+        animate();
+        prepareAndWait();
+      }
+
+      // ── QUẢN LÝ MẬT KHẨU (PASSCODE SCREEN) ──
+      const PASSCODE = cfg.passcode || '3008';
+      let passcodeInput = '';
+
+      const passcodeScreen = document.getElementById('passcodeScreen');
+      const passcodeDots = document.getElementById('passcodeDots');
+      const passcodeBears = document.getElementById('passcodeBears');
+      const bearLeft = document.getElementById('bearLeft');
+      const bearRight = document.getElementById('bearRight');
+
+      if (cfg.enablePasscode) {
+        passcodeScreen.classList.add('visible');
+        // Tắt màn hình loading để hiện passcode
+        const loadingScreen = document.getElementById('loading');
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => { loadingScreen.style.display = 'none'; }, 600);
+      } else {
+        passcodeScreen.style.display = 'none';
+        init();
+      }
+
+      function updatePasscodeDots() {
+        const dots = passcodeDots.querySelectorAll('.passcode-dot');
+        dots.forEach((dot, i) => {
+          dot.classList.remove('filled', 'error');
+          if (i < passcodeInput.length) dot.classList.add('filled');
+        });
+      }
+
+      function updateBearPosition() {
+        const pos = passcodeInput.length;
+        bearLeft.className = `passcode-bear left pos-${pos}`;
+        bearRight.className = `passcode-bear right pos-${pos}`;
+      }
+
+      function showPasscodeError() {
+        const dots = passcodeDots.querySelectorAll('.passcode-dot');
+        dots.forEach(d => d.classList.add('error'));
+        bearLeft.className = 'passcode-bear left pos-0';
+        bearRight.className = 'passcode-bear right pos-0';
+        setTimeout(() => {
+          passcodeInput = '';
+          dots.forEach(d => d.classList.remove('filled', 'error'));
+        }, 500);
+      }
+
+      function openGift() {
+        passcodeBears.classList.add('show-couple');
+        startBgMusic();
+        setTimeout(() => {
+          passcodeScreen.classList.add('hiding');
+          setTimeout(() => {
+            passcodeScreen.classList.remove('visible', 'hiding');
+            init();
+          }, 500);
+        }, 2000);
+      }
+
+      document.querySelectorAll('.passcode-btn[data-num]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (passcodeInput.length >= 4) return;
+          passcodeInput += btn.dataset.num;
+          updatePasscodeDots();
+          updateBearPosition();
+          if (passcodeInput.length === 4) {
+            if (passcodeInput === PASSCODE) {
+              openGift();
             } else {
-                passcodeScreen.style.display = 'none';
-                init();
+              showPasscodeError();
             }
+          }
+        });
+      });
 
-            function updatePasscodeDots() {
-                const dots = passcodeDots.querySelectorAll('.passcode-dot');
-                dots.forEach((dot, i) => {
-                    dot.classList.remove('filled', 'error');
-                    if (i < passcodeInput.length) dot.classList.add('filled');
-                });
-            }
+      document.getElementById('passcodeCancel')?.addEventListener('click', () => {
+        passcodeInput = '';
+        updatePasscodeDots();
+        updateBearPosition();
+      });
 
-            function updateBearPosition() {
-                const pos = passcodeInput.length;
-                bearLeft.className = `passcode-bear left pos-${pos}`;
-                bearRight.className = `passcode-bear right pos-${pos}`;
-            }
-
-            function showPasscodeError() {
-                const dots = passcodeDots.querySelectorAll('.passcode-dot');
-                dots.forEach(d => d.classList.add('error'));
-                bearLeft.className = 'passcode-bear left pos-0';
-                bearRight.className = 'passcode-bear right pos-0';
-                setTimeout(() => {
-                    passcodeInput = '';
-                    dots.forEach(d => d.classList.remove('filled', 'error'));
-                }, 500);
-            }
-
-            function openGift() {
-                passcodeBears.classList.add('show-couple');
-                startBgMusic();
-                setTimeout(() => {
-                    passcodeScreen.classList.add('hiding');
-                    setTimeout(() => {
-                        passcodeScreen.classList.remove('visible', 'hiding');
-                        init();
-                    }, 500);
-                }, 2000);
-            }
-
-            document.querySelectorAll('.passcode-btn[data-num]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (passcodeInput.length >= 4) return;
-                    passcodeInput += btn.dataset.num;
-                    updatePasscodeDots();
-                    updateBearPosition();
-                    if (passcodeInput.length === 4) {
-                        if (passcodeInput === PASSCODE) {
-                            openGift();
-                        } else {
-                            showPasscodeError();
-                        }
-                    }
-                });
-            });
-
-            document.getElementById('passcodeCancel')?.addEventListener('click', () => {
-                passcodeInput = '';
-                updatePasscodeDots();
-                updateBearPosition();
-            });
-
-        })();
-    </script>
+    })();
+  </script>
 </body>
+
 </html>
