@@ -1075,7 +1075,7 @@
   <canvas id="webglCanvas"></canvas>
 
   <!-- Dữ liệu hình ảnh Offline / Base64 chống lỗi CORS trên giao thức file:/// -->
-  <script src="photos_data.js?v=20261019_v3"></script>
+  <script src="photos_data.js?v=20261019_v4"></script>
 
   <!-- ================================================================
          CẤU HÌNH DỄ DÀNG ĐIỀU CHỈNH (CONFIG)
@@ -1097,23 +1097,23 @@
 
       // Danh sách ảnh tạo nên Quả Cầu Vũ Trụ 3D (tự động dùng Base64 khi mở file trực tiếp để không bị lỗi CORS)
       sphereImages: (window.SPHERE_PHOTO_DATA && window.SPHERE_PHOTO_DATA.length) ? window.SPHERE_PHOTO_DATA : [
-        'photos/2.jpg',
-        'photos/10.jpg',
         'photos/1.jpg',
-        'photos/13.jpg',
-        'photos/6.jpg',
-        'photos/5.jpg',
-        'photos/14.jpg',
-        'photos/7.jpg',
+        'photos/2.jpg',
         'photos/3.jpg',
-        'photos/16.jpg',
-        'photos/12.jpg',
-        'photos/15.jpg',
         'photos/4.jpg',
-        'photos/17.jpg',
-        'photos/11.jpg',
+        'photos/5.jpg',
+        'photos/6.jpg',
+        'photos/7.jpg',
         'photos/8.jpg',
-        'photos/9.jpg'
+        'photos/9.jpg',
+        'photos/10.jpg',
+        'photos/11.jpg',
+        'photos/12.jpg',
+        'photos/13.jpg',
+        'photos/14.jpg',
+        'photos/15.jpg',
+        'photos/16.jpg',
+        'photos/17.jpg'
       ],
 
       // Nội dung bức thư tình
@@ -1124,7 +1124,7 @@
       },
 
       // Nhạc nền (đã tải sẵn offline trong music/cho_chut.mp3)
-      bgMusic: 'music/cho_chut.mp3?v=20261019_v3',
+      bgMusic: 'music/cho_chut.mp3?v=20261019_v4',
       bgVolume: 0.65
     };
   </script>
@@ -1465,7 +1465,7 @@
       const SP_FLYOUT_BOUND = 10, SP_RAIN_SPEED = 0.025, SP_RAIN_COUNT = 450;
       const isMobileSP = window.innerWidth < 768;
 
-      let spPhase = false, spGroup = null, spMeshes = [], spTextures = [];
+      let spPhase = false, spGroup = null, spMeshes = [], spTextures = [], spPatchTextureIndices = null;
       let spIntroStartTime = 0, spIntroComplete = false, spIntroCompleteTime = 0;
       let spClickSphere = null, spRaycaster = null, spMouse = null;
       let spHasZoomedIn = false, spNeedZoomIn = false, spZoomInTime = 0;
@@ -1516,7 +1516,10 @@
         if (spMeshes && spMeshes.length > 0) {
           spMeshes.forEach((mesh, idx) => {
             if (mesh.material) {
-              mesh.material.map = textures[idx % textures.length];
+              const texIdx = (spPatchTextureIndices && spPatchTextureIndices[idx] !== undefined)
+                ? (spPatchTextureIndices[idx] % textures.length)
+                : (idx % textures.length);
+              mesh.material.map = textures[texIdx];
               mesh.material.needsUpdate = true;
             }
           });
@@ -1524,7 +1527,10 @@
         if (spFloatingImages && spFloatingImages.length > 0) {
           spFloatingImages.forEach((ig, idx) => {
             if (ig.userData && ig.userData.iMat) {
-              ig.userData.iMat.map = textures[idx % textures.length];
+              const texIdx = (spPatchTextureIndices && spPatchTextureIndices[idx] !== undefined)
+                ? (spPatchTextureIndices[idx] % textures.length)
+                : (idx % textures.length);
+              ig.userData.iMat.map = textures[texIdx];
               ig.userData.iMat.needsUpdate = true;
             }
           });
@@ -1570,13 +1576,109 @@
         return geo;
       }
 
+      // Thuật toán sắp xếp ngẫu nhiên đảm bảo không có 2 ảnh giống nhau nằm kề nhau trên quả cầu
+      function spGenerateTextureAssignment(numTextures, rowCounts) {
+        if (!numTextures || numTextures <= 1) return [];
+        const total = rowCounts.reduce((a, b) => a + b, 0);
+        const prefix = [0];
+        for (let r = 0; r < rowCounts.length; r++) prefix.push(prefix[r] + rowCounts[r]);
+
+        // Tạo danh sách kề cho tất cả các ô trên quả cầu (trái, phải, hàng trên, hàng dưới, các góc chạm nhau)
+        const adj = [];
+        for (let r = 0; r < rowCounts.length; r++) {
+          const n = rowCounts[r];
+          for (let c = 0; c < n; c++) {
+            const neighbors = new Set();
+            // Liền kề cùng hàng (vòng tròn khép kín)
+            neighbors.add(prefix[r] + ((c - 1 + n) % n));
+            neighbors.add(prefix[r] + ((c + 1) % n));
+            // Liền kề hàng lân cận (tiếp xúc góc hoặc trùng góc quét phi/theta)
+            for (const dr of [-1, 1]) {
+              const nr = r + dr;
+              if (nr < 0 || nr >= rowCounts.length) continue;
+              const n2 = rowCounts[nr];
+              for (let c2 = 0; c2 < n2; c2++) {
+                let dTheta = Math.abs(((c + 0.5) / n - (c2 + 0.5) / n2) * 2 * Math.PI);
+                if (dTheta > Math.PI) dTheta = 2 * Math.PI - dTheta;
+                // Kiểm tra góc quét giao nhau hoặc chạm đỉnh
+                if (dTheta < (Math.PI / n + Math.PI / n2 + 0.08)) {
+                  neighbors.add(prefix[nr] + c2);
+                }
+              }
+            }
+            adj[prefix[r] + c] = Array.from(neighbors);
+          }
+        }
+
+        // Tô màu ngẫu nhiên (chọn ảnh) sao cho các ô kề nhau không bao giờ trùng ảnh
+        const maxFreq = Math.ceil(total / numTextures);
+        for (let attempt = 0; attempt < 100; attempt++) {
+          const counts = new Array(numTextures).fill(0);
+          const colors = new Array(total).fill(-1);
+          const order = Array.from({ length: total }, (_, i) => i);
+          order.sort(() => Math.random() - 0.5);
+
+          let valid = true;
+          for (const u of order) {
+            const used = new Set();
+            for (const v of adj[u]) {
+              if (colors[v] !== -1) used.add(colors[v]);
+            }
+            let candidates = [];
+            for (let k = 0; k < numTextures; k++) {
+              if (!used.has(k) && counts[k] < maxFreq) candidates.push(k);
+            }
+            if (candidates.length === 0) {
+              for (let k = 0; k < numTextures; k++) {
+                if (!used.has(k)) candidates.push(k);
+              }
+            }
+            if (candidates.length === 0) {
+              valid = false;
+              break;
+            }
+            const minC = Math.min(...candidates.map(k => counts[k]));
+            const best = candidates.filter(k => counts[k] === minC);
+            const chosen = best[Math.floor(Math.random() * best.length)];
+            colors[u] = chosen;
+            counts[chosen]++;
+          }
+
+          if (valid) {
+            let conflicts = 0;
+            for (let u = 0; u < total; u++) {
+              for (const v of adj[u]) {
+                if (colors[u] === colors[v]) conflicts++;
+              }
+            }
+            if (conflicts === 0) return colors;
+          }
+        }
+
+        // Dự phòng an toàn nếu thuật toán không tìm ra lời giải hợp lệ
+        const fallback = [];
+        let last = -1;
+        for (let i = 0; i < total; i++) {
+          let pick = Math.floor(Math.random() * numTextures);
+          let tries = 0;
+          while (pick === last && tries < 10) {
+            pick = Math.floor(Math.random() * numTextures);
+            tries++;
+          }
+          fallback.push(pick);
+          last = pick;
+        }
+        return fallback;
+      }
+
       function spBuildSphere() {
-        let imgIdx = 0;
         const phiStart = Math.PI * SP_POLAR_MARGIN;
         const phiEnd = Math.PI * (1 - SP_POLAR_MARGIN);
         const phiRange = phiEnd - phiStart;
         const len = spTextures.length;
 
+        // Tính trước số ô mỗi hàng
+        const rowCounts = [];
         for (let row = 0; row < SP_ROWS; row++) {
           const p1 = phiStart + (row / SP_ROWS) * phiRange;
           const p2 = phiStart + ((row + 1) / SP_ROWS) * phiRange;
@@ -1584,11 +1686,25 @@
           const circ = 2 * Math.PI * SP_RADIUS * Math.sin(pMid);
           const imgH = phiRange * SP_RADIUS / SP_ROWS;
           const n = Math.max(3, Math.round(circ / imgH));
+          rowCounts.push(n);
+        }
+
+        // Tạo mảng chỉ số ảnh ngẫu nhiên, đảm bảo không có 2 ô liền kề trùng ảnh
+        spPatchTextureIndices = spGenerateTextureAssignment(len, rowCounts);
+
+        let patchIdx = 0;
+        for (let row = 0; row < SP_ROWS; row++) {
+          const p1 = phiStart + (row / SP_ROWS) * phiRange;
+          const p2 = phiStart + ((row + 1) / SP_ROWS) * phiRange;
+          const n = rowCounts[row];
           const tStep = (2 * Math.PI) / n;
           for (let col = 0; col < n; col++) {
             const t = col * tStep;
-            const tex = spTextures[imgIdx % len];
-            imgIdx++;
+            const texIdx = (spPatchTextureIndices && spPatchTextureIndices[patchIdx] !== undefined)
+              ? spPatchTextureIndices[patchIdx]
+              : (patchIdx % len);
+            const tex = spTextures[texIdx];
+            patchIdx++;
             const geo = spCreatePatch(SP_RADIUS, t, t + tStep, p1, p2, 10, 10);
             const mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent: true, opacity: 1 });
             const mesh = new THREE.Mesh(geo, mat);
@@ -1659,9 +1775,20 @@
         }
 
         const len = (spTextures && spTextures.length) ? spTextures.length : 1;
+        let prevPick = -1;
 
         for (let i = 0; i < total; i++) {
-          const tex = spTextures[i % len];
+          let pick = (i % len);
+          if (len > 1) {
+            pick = Math.floor(Math.random() * len);
+            let tries = 0;
+            while (pick === prevPick && tries < 10) {
+              pick = Math.floor(Math.random() * len);
+              tries++;
+            }
+          }
+          prevPick = pick;
+          const tex = spTextures[pick];
           // Kích thước ảnh to, rõ ràng và viền bo góc tinh tế
           const sv = isMobileSP ? (1.0 + Math.random() * 0.45) : (1.25 + Math.random() * 0.6);
           const w = 1.9 * sv, h = 1.4 * sv, cr = 0.16 * sv;
